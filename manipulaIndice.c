@@ -1,4 +1,4 @@
-#include "manipulaArquivo.h"
+#include "manipulaIndice.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -471,45 +471,6 @@ long long achaPosicaoInsere(FILE *file, regDados *registro, long long ultimoBO) 
 
     fseek(file, origin, SEEK_SET);     //volto o ponteiro de leitura para o lugar original dele
     return posUlt;
-}
-
-/*
-    Funcao que imprime na tela, organizadamente,
-    um registro de um arquivo binario gerado
-    anteriormente por este programa. A funcao
-    assume que o usuario ira chama-la quando
-    o ponteiro de leitura estiver exatamente no
-    comeco do registro. Alem disso, esta funcao
-    imprimira, antes de cada campo, o metadado
-    correspondente, que vira a partir de um
-    registro de cabecalho passado por parametro.
-
-    Parametros:
-        FILE *file - arquivo binario
-        regCabec *cabec - cabecalho do arquivo
-*/
-void mostraRegistroMeta(regCabec *cabecalho, regDados *registro) {
-
-    printf("%s: ", cabecalho->desCampo[0]);   //mostro o metadado referente ao campo
-    printf("%d\n", registro->idServidor);   //mostro o valor do campo "idServidor" na tela
-
-    printf("%s: ", cabecalho->desCampo[1]);   //mostro o metadado referente ao campo
-    if (registro->salarioServidor != -1.0) printf("%.2lf\n", registro->salarioServidor);   //mostro o valor do campo "salarioServidor" na tela
-    else printf("valor nao declarado\n");
-
-    printf("%s: ", cabecalho->desCampo[2]);   //mostro o metadado referente ao campo
-    if (registro->telefoneServidor[0] != '\0') printf("%.14s\n", registro->telefoneServidor);   //mostro o valor do campo "telefoneServidor" na tela
-    else printf("valor nao declarado\n");
-
-    printf("%s: ", cabecalho->desCampo[3]);   //mostro o metadado referente ao campo
-    if (registro->nomeServidor != NULL) printf("%s\n", registro->nomeServidor);   //mostro o valor do campo "nomeServidor" na tela
-    else printf("valor nao declarado\n");
-
-    printf("%s: ", cabecalho->desCampo[4]);   //mostro o metadado referente ao campo
-    if (registro->cargoServidor != NULL) printf("%s\n", registro->cargoServidor);   //mostro o valor do campo "cargoServidor" na tela
-    else printf("valor nao declarado\n");
-
-    printf("\n");   //termino de mostrar o registro
 }
 
 /*

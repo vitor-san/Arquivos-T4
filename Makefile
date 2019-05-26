@@ -1,13 +1,13 @@
 all:
-	gcc -o programaTrab3 main.c escreverTela.c manipulaArquivo.c -g
+	gcc -o programaTrab4 main.c escreverTela.c manipulaArquivo.c manipulaIndice.c -g
 run:
-	./programaTrab3
+	./programaTrab4
 debug:
-	gdb programaTrab3
+	gdb programaTrab4
 val:
-	valgrind --leak-check=full --track-origins=yes ./programaTrab3
+	valgrind --leak-check=full --track-origins=yes ./programaTrab4
 zip:
-	zip trab3.zip main.c escreverTela.c escreverTela.h manipulaArquivo.c manipulaArquivo.h Makefile
+	zip trab4.zip main.c escreverTela.c escreverTela.h manipulaArquivo.c manipulaArquivo.h manipulaIndice.c manipulaIndice.h Makefile
 case1:
 	cp -t $(shell pwd) ./casos/1.in
 	cp -t $(shell pwd) ./binarios/binario-1.bin

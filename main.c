@@ -238,46 +238,6 @@ void mostraBin() {
 }
 
 /*
-    Funcao que imprime na tela, organizadamente,
-    um registro de um arquivo binario gerado
-    anteriormente por este programa. A funcao
-    assume que o usuario ira chama-la quando
-    o ponteiro de leitura estiver exatamente no
-    comeco do registro. Alem disso, esta funcao
-    imprimira, antes de cada campo, o metadado
-    correspondente, que vira a partir de um
-    registro de cabecalho passado por parametro.
-
-    Parametros:
-        FILE *file - arquivo binario
-        regCabec *cabec - cabecalho do arquivo
-*/
-void mostraRegistroMeta(FILE *file, regCabec *cabecalho, regDados *registro) {
-
-    printf("%s: ", cabecalho->desCampo[0]);   //mostro o metadado referente ao campo
-    printf("%d\n", registro->idServidor);   //mostro o valor do campo "idServidor" na tela
-
-    printf("%s: ", cabecalho->desCampo[1]);   //mostro o metadado referente ao campo
-    if (registro->salarioServidor != -1.0) printf("%.2lf\n", registro->salarioServidor);   //mostro o valor do campo "salarioServidor" na tela
-    else printf("valor nao declarado\n");
-
-    printf("%s: ", cabecalho->desCampo[2]);   //mostro o metadado referente ao campo
-    if (registro->telefoneServidor[0] != '\0') printf("%.14s\n", registro->telefoneServidor);   //mostro o valor do campo "telefoneServidor" na tela
-    else printf("valor nao declarado\n");
-
-    printf("%s: ", cabecalho->desCampo[3]);   //mostro o metadado referente ao campo
-    if (registro->nomeServidor != NULL) printf("%s\n", registro->nomeServidor);   //mostro o valor do campo "nomeServidor" na tela
-    else printf("valor nao declarado\n");
-
-    printf("%s: ", cabecalho->desCampo[4]);   //mostro o metadado referente ao campo
-    if (registro->cargoServidor != NULL) printf("%s\n", registro->cargoServidor);   //mostro o valor do campo "cargoServidor" na tela
-    else printf("valor nao declarado\n");
-
-    printf("\n");   //termino de mostrar o registro
-    fseek(file, registro->tamanhoRegistro+5, SEEK_CUR); //vou para o final do registro (+5 por conta do campo "removido" e do indicador de tamanho, nao contabilizados no mesmo)
-}
-
-/*
     Busca, em todo o arquivo binario, registros que
     satisfacam um criterio de busca determinado pelo
     usuario, mostrando-os na tela assim que sao encontrados.
@@ -331,87 +291,70 @@ void buscaReg() {
         leRegistro(readFile, registro);
         int indicTam = registro->tamanhoRegistro;
 
-        if (registro->removido == '*') {   //o registro esta removido
-            fseek(readFile, indicTam+5, SEEK_CUR);   //se o registro esta removido, apenas o pulo
-        }
-        else if (registro->removido == '-') {   //o registro pode ser manipulado
+        if (registro->removido == '-') {   //o registro pode ser manipulado
             if (!strcmp(nomeCampo, "idServidor")) {    //se o campo a ser buscado eh "idServidor"...
                 if (registro->idServidor == atoi(valorCampo)) {    //se o valor do campo no registro lido eh igual ao do dado como criterio de busca...
-                    mostraRegistroMeta(readFile, cabecalho, registro);
+                    mostraRegistroMeta(cabecalho, registro);
                     achou = 1;
                     break;  //ja que o numero do idServidor eh unico, se acharmos um igual nao precisaremos mais continuar procurando
                 }
-                else fseek(readFile, indicTam+5, SEEK_CUR);   //vou para o proximo registro (+5 por conta dos bytes do indicador de tamanho e do campo "removido")
             }
-
             else if (!strcmp(nomeCampo, "salarioServidor")) {    //se o campo a ser buscado eh "salarioServidor"...
                 if (!strcmp(valorCampo, "NULO")) {  //se o valor a ser buscado eh nulo...
                     if (registro->salarioServidor == -1) {
-                        mostraRegistroMeta(readFile, cabecalho, registro);
+                        mostraRegistroMeta(cabecalho, registro);
                         achou = 1;
                     }
-                    else fseek(readFile, indicTam+5, SEEK_CUR);   //vou para o proximo registro (+5 por conta dos bytes do indicador de tamanho e do campo "removido")
                 }
                 else {  //o valor a ser buscado nao eh nulo
                     if (registro->salarioServidor == atof(valorCampo)) {    //se o valor lido eh igual ao do dado como criterio de busca...
-                        mostraRegistroMeta(readFile, cabecalho, registro);
+                        mostraRegistroMeta(cabecalho, registro);
                         achou = 1;
                     }
-                    else fseek(readFile, indicTam+5, SEEK_CUR);   //vou para o proximo registro (+5 por conta dos bytes do indicador de tamanho e do campo "removido")
                 }
             }
-
             else if (!strcmp(nomeCampo, "telefoneServidor")) {    //se o campo a ser buscado eh "telefoneServidor"...
                 if (!strcmp(valorCampo, "NULO")) {  //se o valor a ser buscado eh nulo...
                     if (registro->telefoneServidor[0] == '\0') {
-                        mostraRegistroMeta(readFile, cabecalho, registro);
+                        mostraRegistroMeta(cabecalho, registro);
                         achou = 1;
                     }
-                    else fseek(readFile, indicTam+5, SEEK_CUR);   //vou para o proximo registro (+5 por conta dos bytes do indicador de tamanho e do campo "removido")
                 }
                 else {  //o valor a ser buscado nao eh nulo
                     if (!strcmp(registro->telefoneServidor, valorCampo)) {    //se o valor lido eh igual ao do dado como criterio de busca...
-                        mostraRegistroMeta(readFile, cabecalho, registro);
+                        mostraRegistroMeta(cabecalho, registro);
                         achou = 1;
                     }
-                    else fseek(readFile, indicTam+5, SEEK_CUR);   //vou para o proximo registro (+5 por conta dos bytes do indicador de tamanho e do campo "removido")
                 }
             }
-
             else if (!strcmp(nomeCampo, "nomeServidor")) {    //se o campo a ser buscado eh "nomeServidor"...
                 if (!strcmp(valorCampo, "NULO")) {  //se o valor a ser buscado eh nulo...
                     if (registro->nomeServidor == NULL) {
-                        mostraRegistroMeta(readFile, cabecalho, registro);
+                        mostraRegistroMeta(cabecalho, registro);
                         achou = 1;
                     }
-                    else fseek(readFile, indicTam+5, SEEK_CUR);   //vou para o proximo registro (+5 por conta dos bytes do indicador de tamanho e do campo "removido")
                 }
                 else {  //o valor a ser buscado nao eh nulo
                     if (registro->nomeServidor != NULL && !strcmp(registro->nomeServidor, valorCampo)) {    //se o valor lido eh igual ao do dado como criterio de busca...
-                        mostraRegistroMeta(readFile, cabecalho, registro);
+                        mostraRegistroMeta(cabecalho, registro);
                         achou = 1;
                     }
-                    else fseek(readFile, indicTam+5, SEEK_CUR);   //vou para o proximo registro (+5 por conta dos bytes do indicador de tamanho e do campo "removido")
                 }
             }
-
             else if (!strcmp(nomeCampo, "cargoServidor")) {    //se o campo a ser buscado eh "cargoServidor"...
                 if (!strcmp(valorCampo, "NULO")) {  //se o valor a ser buscado eh nulo...
                     if (registro->cargoServidor == NULL) {
-                        mostraRegistroMeta(readFile, cabecalho, registro);
+                        mostraRegistroMeta(cabecalho, registro);
                         achou = 1;
                     }
-                    else fseek(readFile, indicTam+5, SEEK_CUR);   //vou para o proximo registro (+5 por conta dos bytes do indicador de tamanho e do campo "removido")
                 }
                 else {  //o valor a ser buscado nao eh nulo
                     if (registro->cargoServidor != NULL && !strcmp(registro->cargoServidor, valorCampo)) {    //se o valor lido eh igual ao do dado como criterio de busca...
-                        mostraRegistroMeta(readFile, cabecalho, registro);
+                        mostraRegistroMeta(cabecalho, registro);
                         achou = 1;
                     }
-                    else fseek(readFile, indicTam+5, SEEK_CUR);   //vou para o proximo registro (+5 por conta dos bytes do indicador de tamanho e do campo "removido")
                 }
             }
-
             else {  //o usuario digitou errado o nome do campo
                 printf("Falha no processamento do arquivo.");
                 return;
@@ -420,6 +363,7 @@ void buscaReg() {
 
         if (registro->nomeServidor != NULL) free(registro->nomeServidor);
         if (registro->cargoServidor != NULL) free(registro->cargoServidor);
+        fseek(readFile, indicTam+5, SEEK_CUR);   //vou para o proximo registro (+5 por conta dos bytes do indicador de tamanho e do campo "removido")
         b = fgetc(readFile);
     }
 
