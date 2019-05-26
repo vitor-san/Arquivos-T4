@@ -9,8 +9,8 @@ val:
 zip:
 	zip trab3.zip main.c escreverTela.c escreverTela.h manipulaArquivo.c manipulaArquivo.h Makefile
 case1:
-	cp -t /home/vitorsan/Desktop/Trabalhos-USP/Files/Trabalho3 ./casos/1.in
-	cp -t /home/vitorsan/Desktop/Trabalhos-USP/Files/Trabalho3 ./binarios/binario-1.bin
+	cp -t $(shell pwd) ./casos/1.in
+	cp -t $(shell pwd) ./binarios/binario-1.bin
 	make all
 	make run < 1.in
 diff:
