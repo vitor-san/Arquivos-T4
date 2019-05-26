@@ -3,7 +3,10 @@
 * permitindo leitura, escrita, impressao,
 * remocao, adicao e atualizacao de campos
 * e registros escritos em disco.
-* Autor: 10734345, Vitor Santana Cordeiro
+* Codigo original (ate T3): Vitor Santana
+* Modificacoes (T4/T5):
+* - 10734769, Joao Vitor Silva Ramos
+* - 10734345, Vitor Santana Cordeiro
 * Turma: BCC B
 * Sao Carlos, SP - Brasil
 */
