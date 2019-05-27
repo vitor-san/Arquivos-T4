@@ -1,5 +1,5 @@
 all:
-	gcc -o programaTrab1 main.c escreverTela.c manipulaArquivo.c -g
+	gcc -o programaTrab1 main.c escreverTela.c manipulaArquivo.c manipulaIndice.c -g
 run:
 	./programaTrab1
 debug:
