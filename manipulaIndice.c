@@ -3,6 +3,8 @@
 #include <string.h>
 #include "sort.h"
 
+//TODO: busca binaria modificada (provavelmente com funcao de comparacao generica e vai no sort.c), inserir, remover e atualizar registros em RAM
+
 /*
     Cria um novo registro de cabecalho ZERADO.
     CUIDADO: a funcao NAO o coloca no arquivo.
