@@ -1,6 +1,7 @@
 #include "manipulaIndice.h"
 #include <stdlib.h>
 #include <string.h>
+#include "sort.h"
 
 /*
     Cria um novo registro de cabecalho ZERADO.
@@ -97,8 +98,24 @@ void insereCabecalhoIndice(FILE *file, regCabecI *cabecalho) {
 
     fwrite(&(cabecalho->status), 1, 1, file);  //escrevo o campo "status" no arquivo binario
     fwrite(&(cabecalho->nroRegistros), sizeof(int), 1, file);  //escrevo o campo "topoLista" no arquivo binario
-    
+
     fseek(file, origin, SEEK_SET);
+}
+
+/*
+    Funcao que insere um registro de dados
+    na posicao atual do ponteiro de escrita
+    do arquivo de indices.
+
+    Parametros:
+        FILE *file - arquivo de indices a ser
+    modificado
+        regDados *registro - registro de dados
+    a ser gravado
+*/
+void insereRegistroIndice(FILE *file, regDadosI *registro) {
+    fwrite(&(registro->chaveBusca), 1, 120, file);
+    fwrite(&(registro->byteOffset), 8, 1, file);
 }
 
 /*
@@ -138,4 +155,29 @@ regDadosI *carregaIndiceRAM(FILE *file) {
     regDadosI *vetor = calloc(tam, sizeof(regDadosI));
     fread(vetor, 1, tam, file);
     return vetor;
+}
+
+/*
+    Reescreve o arquivo de indices, atualizando-o
+    de acordo com as modificacoes feitas em RAM.
+
+    Parametros:
+        FILE *file - arquivo em que sera realizada
+    a escrita
+        regDadosI *vetorRAM - vetor que contem os
+    registros modificados
+*/
+void reescreveArquivoIndice(FILE *file, regDadosI *vetorRAM) {
+    int n = sizeof(vetorRAM)/sizeof(regDadosI); //numero de registros presentes no vetor
+
+    fseek(file, 0, SEEK_SET);
+    fputc('0', file);   //como estou escrevendo em um arquivo, seu status deve ser '0' ate que a escrita acabe
+
+    for (int i = 0; i < n; i++) {
+        if (vetorRAM[i].chaveBusca[0] == '\0') continue;    //o registro esta "logicamente removido" em RAM
+        insereRegistroIndice(file, vetorRAM+i); //insiro o registro no arquivo
+    }
+
+    fseek(file, 0, SEEK_SET);
+    fputc('1', file);   //ja que terminei de escreve no arquivo, seu status vira '1'
 }

@@ -34,6 +34,8 @@ typedef struct {  //define o tipo de dados "registro de dados"
     void leRegistroIndice(FILE *file, regDadosI *registro);  //DEPRECATED
 //insere o cabecalho no arquivo binario
     void insereCabecalhoIndice(FILE *file, regCabecI *cabecalho);
+//insere o registro no arquivo binario (CUIDADO: anda com o seek)
+    void insereRegistroIndice(FILE *file, regDadosI *registro);
 //verifica o espaco disponivel na pagina de disco atual
     void checaFimPaginaIndice(FILE *file, regDadosI *registro, int tamAntigo);
 //carrega todos os registros do arquivo de indices para a RAM
