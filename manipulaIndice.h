@@ -24,6 +24,8 @@ typedef struct {  //define o tipo de dados "registro de dados"
 * isso estara explicito em seu nome.
 */
 
+//TODO: Pesquisa, Criacao, Insercao, Remocao, Atualizacao
+
 //inicializa um novo registro de cabecalho
     regCabecI *criaCabecalhoIndice();
 //inicializa um novo registro de dados
