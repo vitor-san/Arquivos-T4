@@ -281,6 +281,29 @@ regDadosI *carregaIndiceRAM(FILE *file) {
 }
 
 /*
+    Reescreve o arquivo de indices, atualizando-o
+    de acordo com as modificacoes feitas em RAM.
+
+    Parametros:
+        FILE *file - arquivo em que sera realizada
+    a escrita
+        regDadosI *vetorRAM - vetor que contem os
+    registros modificados
+*/
+void reescreveArquivoIndice(FILE *file, regDadosI *vetorRAM) {
+    regDadosI registro; //sera utilizado para recuperar, um a um, os registros da RAM, e assim trata-los individualmente
+    int n = sizeof(vetorRAM)/sizeof(regDadosI); //numero de registros presentes no vetor
+
+    fseek(file, 0, SEEK_SET);
+    fputc('0', file);   //como estou escrevendo em um arquivo, seu status deve ser '0' ate que a escrita acabe
+
+    for (int i = 0; i < n; i++) {
+        registro = vetorRAM[i];
+        if (registro.chaveBusca[0])
+    }
+}
+
+/*
     Funcao que imprime na tela o registro de dados
     passado como parametro.
 
