@@ -61,30 +61,6 @@ void leCabecalhoIndice(FILE *file, regCabecI *cabecalho) {
 }
 
 /*
-    Le os campos de um registro presente em um
-    arquivo binario anteriormente gerado por
-    este programa e guarda seus valores em uma
-    estrutura passada por parametro pelo usuario.
-    A funcao assume que o ponteiro de leitura do
-    arquivo estara no inicio do registro ao ser
-    chamada.
-
-    Parametros:
-        FILE *file - arquivo binario contendo o
-    registro a ser lido
-        regDados *registro - estrutura para onde
-    devem ser copiados os dados do registro
-*/
-void leRegistroIndice(FILE *file, regDadosI *registro) {
-    long origin = ftell(file);    //guardo a posicao de inicio do registro
-
-    fread(registro->chaveBusca, sizeof(char), 120, file);
-    fread(&(registro->byteOffset), sizeof(long long), 1, file);
-
-    fseek(file, origin, SEEK_SET);     //volto ao inicio do registro
-}
-
-/*
     Funcao que insere o registro de cabecalho
     no arquivo binario passado como parametro.
 

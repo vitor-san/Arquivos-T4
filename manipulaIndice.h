@@ -30,8 +30,6 @@ typedef struct {  //define o tipo de dados "registro de dados"
     regDadosI *criaRegistroIndice();
 //le o registro de cabecalho e o coloca na estrutura passada por referencia
     void leCabecalhoIndice(FILE *file, regCabecI *cabecalho);
-//le do arquivo um registro de dados e o coloca na estrutura passada por referencia
-    void leRegistroIndice(FILE *file, regDadosI *registro);  //DEPRECATED
 //insere o cabecalho no arquivo binario
     void insereCabecalhoIndice(FILE *file, regCabecI *cabecalho);
 //insere o registro no arquivo binario (CUIDADO: anda com o seek)
