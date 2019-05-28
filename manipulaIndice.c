@@ -5,6 +5,10 @@
 
 //TODO: busca binaria modificada (provavelmente com funcao de comparacao generica e vai no sort.c), inserir, remover e atualizar registros em RAM
 
+typedef struct {
+    ListaOrd[26] alfabeto;
+} Estrutura;
+
 /*
     Cria um novo registro de cabecalho ZERADO.
     CUIDADO: a funcao NAO o coloca no arquivo.
@@ -123,9 +127,11 @@ void checaFimPaginaIndice(FILE *file, regDadosI *registro, int tamAntigo) {
     Cria um vetor (alocado dinamicamente) que
     tera todos os registros de dados do arquivo
     de indice, para sua posterior manipulacao
-    na memoria principal.
+    na memoria principal. Sera utilizado para
+    fazer as buscas, ja que o custo sera da
+    ordem log(n) (por conta da busca binaria).
 */
-regDadosI *carregaIndiceRAM(FILE *file) {
+regDadosI *carregaIndiceVetor(FILE *file) {
     fseek(file, 0, SEEK_END);
     long tam = ftell(file);
     fseek(file, TAMPAG, SEEK_SET);  //vou para o inicio dos registros de dados
@@ -134,6 +140,8 @@ regDadosI *carregaIndiceRAM(FILE *file) {
     fread(vetor, 1, tam, file);
     return vetor;
 }
+
+
 
 /*
     Reescreve o arquivo de indices, atualizando-o
@@ -159,3 +167,5 @@ void reescreveArquivoIndice(FILE *file, regDadosI *vetorRAM) {
     fseek(file, 0, SEEK_SET);
     fputc('1', file);   //ja que terminei de escreve no arquivo, seu status vira '1'
 }
+
+//TODO: fazer um vetor[26] de Listas Ordenadas, que ordenam pelo Byte Offset.

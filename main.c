@@ -1492,7 +1492,7 @@ int main() {
         case 9:
             matching();
             break;
-        
+
         default:
             printf("Opção inválida!\n");
     }
