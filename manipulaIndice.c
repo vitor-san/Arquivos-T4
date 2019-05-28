@@ -2,13 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include "sort.h"
+#include "listaOrdenada.h"
 
 //TODO: busca binaria modificada (provavelmente com funcao de comparacao generica e vai no sort.c), inserir, remover e atualizar registros em RAM
-//TODO: checar fim de pagina de disco na insercao
 
-typedef struct {
+struct velo {   //vetor estatico de listas ordenadas
     ListaOrd[26] alfabeto;
-} Estrutura;
+};
 
 /*
     Cria um novo registro de cabecalho ZERADO.
@@ -40,8 +40,8 @@ regCabecI *criaCabecalhoIndice() {
 regDadosI *criaRegistroIndice() {
     regDadosI *registro = malloc(sizeof(regDadosI));
 
-    //registro->chaveBusca = NULL;
-    registro->byteOffset = 0;
+    registro->chaveBusca = NULL;
+    registro->byteOffset = -1;
 
     return registro;
 }
@@ -65,6 +65,26 @@ void leCabecalhoIndice(FILE *file, regCabecI *cabecalho) {
     fread(&(cabecalho->nroRegistros), sizeof(int), 1, file);
 
     fseek(file, origin, SEEK_SET);     //volto ao inicio do registro
+}
+
+/*
+    Le os campos de um registro presente em um
+    arquivo binario anteriormente gerado por
+    este programa e guarda seus valores em uma
+    estrutura passada por parametro pelo usuario.
+    A funcao assume que o ponteiro de leitura do
+    arquivo estara no inicio do registro ao ser
+    chamada.
+
+    Parametros:
+        FILE *file - arquivo binario contendo o
+    registro a ser lido
+        regDadosI *registro - estrutura para onde
+    devem ser copiados os dados do registro
+*/
+void leRegistroIndice(FILE *file, regDadosI *registro) {
+    fread(registro->chaveBusca, 1, 120, file);
+    fread(&(registro->byteOffset), 8, 1, file);
 }
 
 /*
@@ -102,23 +122,17 @@ void insereRegistroIndice(FILE *file, regDadosI *registro) {
 }
 
 /*
-    Checa se o registro a ser inserido cabe
+    Checa se mais um registro pode ser inserido
     na pagina de disco atual do arquivo. Caso
     nao caiba, a funcao ira completar a pagina
-    atual com lixo, modificar o indicador de
-    tamanho do ultimo registro da pagina (para
-    que ele contabilize o lixo como parte dele)
-    e abrir uma nova pagina de disco.
+    atual com lixo e posicionar o ponteiro de
+    escrita no inicio da nova pagina.
 
     Parametros:
-        FILE *file - arquivo binario considerado
-        regDados *registro - registro a ser inserido
-        int tamAntigo - tamanho do ultimo registro
-    inserido no arquivo
+        FILE *file - arquivo binario de indices
 */
-//TODO: modificar para indice
-void checaFimPaginaIndice(FILE *file, regDadosI *registro, int tamAntigo) {
-    if ( (ftell(file)%TAMPAG + 128) > TAMPAG ) { //se nao ha espaco suficiente... (+5 por conta do campo "removido" e do indicador de tamanho, que nao sao contabilizados no tamanho do registro)
+void checaFimPaginaIndice(FILE *file) {
+    if ( (ftell(file)%TAMPAG + 128) > TAMPAG ) { //se nao ha espaco suficiente...
         int diff = TAMPAG - ftell(file)%TAMPAG;  //quantidade necessaria de lixo para completar a pagina de disco
         for (int i = 0; i < diff; i++) fputc('@', file);  //completo com lixo
     }
@@ -142,6 +156,77 @@ regDadosI *carregaIndiceVetor(FILE *file) {
     return vetor;
 }
 
+/*
+    Funcao de comparacao entre dois registros
+    de dados do arquivo de indices.
+*/
+int compare(void *reg1, void *reg2) {
+    regDadosI *r = (regDadosI *)reg1;
+    regDadosI *s = (regDadosI *)reg2;
+
+    int comp = strcmp(r->chaveBusca, s->chaveBusca);
+
+    if (comp == 0) {
+        long long byteOff1 = r->byteOffset;
+        long long byteOff2 = s->byteOffset;
+        return (r > s) - (r < s);
+    }
+    else return comp;
+}
+
+/*
+    Funcao para imprimir um registro de
+    dados do arquivo de indices.
+*/
+void printRegistroIndice(void *reg) {
+    regDadosI print = *((regDadosI *)reg);
+    printf("Chave de busca: %s\n", print.chaveBusca);
+    printf("Byte offset: %lld\n\n", print.byteOffset);
+}
+
+/*
+    Funcao para liberar memoria, anteriormente
+    alocada pelo indice.
+*/
+void freeRegistroIndice(void *reg) {
+    free(reg);
+}
+
+/*
+
+*/
+SuperLista criaSuperLista() {
+    SuperLista nova = malloc(sizeof(SL));
+
+    for (int i = 0; i < 26; i++) {
+        nova->alfabeto[i] = criaListaOrd(compare, freeRegistroIndice, printRegistroIndice);
+    }
+
+    
+
+    return nova;
+}
+
+/*
+
+*/
+SuperLista carregaIndiceLista(FILE *file) {
+    regDadosI reg = criaRegistroIndice();
+
+    fseek(file, TAMPAG, SEEK_SET);  //vou para o inicio dos registros de dados
+
+    byte b = fgetc(file);
+
+    while (!feof(file)) {
+        ungetc(b, file);    //"devolvo" o byte lido
+        leRegistroIndice(file, reg);
+
+
+
+        b = fgetc(file);
+    }
+}
+
 
 
 /*
@@ -160,10 +245,7 @@ void reescreveArquivoIndice(FILE *file, regDadosI *vetorRAM) {
     fseek(file, 0, SEEK_SET);
     fputc('0', file);   //como estou escrevendo em um arquivo, seu status deve ser '0' ate que a escrita acabe
 
-    for (int i = 0; i < n; i++) {
-        if (vetorRAM[i].chaveBusca[0] == '\0') continue;    //o registro esta "logicamente removido" em RAM
-        insereRegistroIndice(file, vetorRAM+i); //insiro o registro no arquivo
-    }
+    for (int i = 0; i < n; i++) insereRegistroIndice(file, vetorRAM+i); //insiro o registro no arquivo
 
     fseek(file, 0, SEEK_SET);
     fputc('1', file);   //ja que terminei de escreve no arquivo, seu status vira '1'

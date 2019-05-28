@@ -16,6 +16,9 @@ typedef struct {  //define o tipo de dados "registro de dados"
     long long byteOffset;   //byte offset do registro de dados principal referenciado por ele
 } regDadosI;
 
+typedef struct velo SL;
+typedef SL* SuperLista;
+
 /*
 * NOTA: Por simplicidade, adotou-se que todas
 * as funcoes que manipularem registros de dados
@@ -24,7 +27,7 @@ typedef struct {  //define o tipo de dados "registro de dados"
 * isso estara explicito em seu nome.
 */
 
-//TODO: Pesquisa, Criacao, Insercao, Remocao, Atualizacao
+//TODO: Pesquisa, Criacao, Insercao, Remocao
 
 //inicializa um novo registro de cabecalho
     regCabecI *criaCabecalhoIndice();
