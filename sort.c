@@ -31,6 +31,7 @@ int partition (regDadosI* arr, int low, int high) {
         }
 
     }
+    
     swap(&arr[i + 1], &arr[high]);
     return (i + 1);
 }

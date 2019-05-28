@@ -4,6 +4,7 @@
 #include "sort.h"
 
 //TODO: busca binaria modificada (provavelmente com funcao de comparacao generica e vai no sort.c), inserir, remover e atualizar registros em RAM
+//TODO: checar fim de pagina de disco na insercao
 
 typedef struct {
     ListaOrd[26] alfabeto;
