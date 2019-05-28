@@ -1461,24 +1461,45 @@ void criaArqIndices() {
 	char inputF1Name[51];   //vai guardar o nome do arquivo de entrada 1
     char outputFileName[51];   //vai guardar o nome do arquivo de saida
     regCabec *cabecalho = criaCabecalho();  //estrutura que sera utilizada para guardar os valores do registro de cabecalho
-    regDados *registro1 = criaRegistro();  //estrutura que sera utilizada para guardar os registros lidos do arquivo binario de entrada 1
+    regDados *registro = criaRegistro();  //estrutura que sera utilizada para guardar os registros lidos do arquivo binario de entrada 1
 
     scanf("%50s %50s", inputF1Name, outputFileName);
 
-    FILE *firstFile = fopen(inputF1Name, "rb");  //abro o arquivo binario 1 para leitura
+    FILE *File = fopen(inputF1Name, "rb");  //abro o arquivo binario 1 para leitura
     FILE *outFile = fopen(outputFileName, "wb+");  //crio um novo arquivo binario para escrita
 
-    if (firstFile == NULL || outFile == NULL) {   //erro na abertura dos arquivos
+    if (File == NULL || outFile == NULL) {   //erro na abertura dos arquivos
         printf("Falha no carregamento do arquivo.");
         return;
     }
 
-    leCabecalho(firstFile, cabecalho);
+    leCabecalho(File, cabecalho);
 
     if (cabecalho->status == '0') {   //se o campo "status" for '0', entao o arquivo esta inconsistente
       printf("Falha no processamento do arquivo.");
       return;
     }
+
+	byte b = fgetc(File);
+
+	while (!feof(File)) {
+        ungetc(b, File); //"devolvo" o byte lido para o arquivo binario 1       
+        leRegistro(File, registro);
+        //TODO: armazenar na lista
+        b = fgetc(firstFile);
+    }
+
+    //TODO: colocar no novo arquivo
+    
+    
+    //antes de fechar o arquivo, coloco seu status para '1'
+    fseek(outFile, 0, SEEK_SET);  //coloco o ponteiro de escrita no primeiro byte do arquivo
+    fputc('1', outFile);  //sobrescrevo o campo "status" do arquivo binario
+
+    free(cabecalho);
+    free(registro);
+    fclose(outFile);
+    fclose(File);
 
 }
 
@@ -1517,7 +1538,7 @@ int main() {
         case 9:
             matching();
             break;
-            
+
         case 10:
         	criaArqIndices();
 
