@@ -1517,8 +1517,10 @@ int main() {
         case 9:
             matching();
             break;
+            
         case 10:
         	criaArqIndices();
+
         default:
             printf("Opção inválida!\n");
     }
