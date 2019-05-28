@@ -24,11 +24,22 @@ void destroiBloco(Bloco *b, void (*funcao_free)(void *dado)) {
     if (b == NULL) return;
 
     b->prox = NULL;
-    free_function(b->dado);
+    funcao_free(b->dado);
     free(b);
 }
 
-void insereListaOrd(ListaOrd *l, void *elem) {
+ListaOrd criaListaOrd(int (*funcao_comparacao)(void *, void *), void (*funcao_free)(void *), void (*funcao_print)(void *)) {
+    ListaOrd nova = malloc(sizeof(LO));
+
+    nova->funcao_comparacao = funcao_comparacao;
+    nova->funcao_free = funcao_free;
+    nova->funcao_print = funcao_print;
+    nova->inicio = novoBloco(NULL);
+
+    return nova;
+}
+
+void insereListaOrd(ListaOrd l, void *elem) {
     if (l == NULL || elem == NULL) return;
 
     Bloco *atual = l->inicio;
@@ -47,7 +58,7 @@ void insereListaOrd(ListaOrd *l, void *elem) {
     }
 }
 
-void removeListaOrd(ListaOrd *l, void *elem) {
+void removeListaOrd(ListaOrd l, void *elem) {
     if (l == NULL || elem == NULL) return;
 
     Bloco *atual = l->inicio;
@@ -56,8 +67,8 @@ void removeListaOrd(ListaOrd *l, void *elem) {
 
     while (atual != NULL) {
         if (l->funcao_comparacao(atual->dado, elem) == 0) { //se achou o bloco a ser removido...
-            if (ant != NULL) {   //remove do meio/fim
-                ant->prox = proxAtual;
+            if (antAtual != NULL) {   //remove do meio/fim
+                antAtual->prox = proxAtual;
             }
             else {   //remove do inicio
                 l->inicio = atual->prox;
@@ -71,10 +82,10 @@ void removeListaOrd(ListaOrd *l, void *elem) {
     }
 }
 
-void printListaOrd(ListaOrd *l) {
+void printListaOrd(ListaOrd l) {
     if (l == NULL) return;
 
-    Bloco *atual = l->inicio;
+    Bloco *atual = l->inicio->prox;
 
     while (atual != NULL) {
         l->funcao_print(atual->dado);
@@ -88,7 +99,7 @@ void freeRecursivo(Bloco *b, void (*funcao_free)(void *)) {
     destroiBloco(b, funcao_free);
 }
 
-void freeListaOrd(ListaOrd *l) {
+void freeListaOrd(ListaOrd l) {
     freeRecursivo(l->inicio, l->funcao_free);
     free(l);
 }
