@@ -10,6 +10,79 @@ struct velo {   //vetor estatico de listas ordenadas
     ListaOrd[26] alfabeto;
 };
 
+int busca_binaria(int* v, int chave, int ini, int fim) {
+
+    // 0 - caso base (busca sem sucesso)
+    if (ini > fim) return FAIL;
+
+    // 1 - calcula ponto central e verifica se chave foi encontrada
+    int centro = (int)((ini+fim)/2.0);
+    if (v[centro] == chave)
+        return centro;
+
+    // 2 - chamada recursiva para metade do espaco de busca
+    if (chave < v[centro])
+        // se chave eh menor, fim passa ser o centro-1
+        return busca_binaria(v, chave, ini, centro-1);
+
+    if (chave > v[centro])
+        // se a chave eh maior, inicio passa ser centro+1
+        return busca_binaria(v, chave, centro+1, fim);
+    
+}
+
+
+long long* buscaRegistroIndice(regDadosI *v, char* chave, int ini, int fim, int* comeco) {
+
+    // 0 - caso base (busca sem sucesso)
+    if (ini > fim) return NULL;
+
+    // 1 - calcula ponto central e verifica se chave foi encontrada
+    int centro = (int)((ini+fim)/2.0);
+
+    if (!strcmp(v[centro].chaveBusca,chave)) {
+
+        long long* retorno = malloc(sizeof(long long));
+
+        int pos = 0;
+        retorno[pos] = v[centro].byteOffset;
+
+        int prox = centro + 1;
+        int ant = centro - 1;
+
+        while(!strcmp(v[ant].chaveBusca,chave)) {
+            pos++;
+            retorno = realloc(retorno,sizeof(long long)*(pos));
+            retorno[pos] = v[ant].byteOffset;
+            ant--;
+        }
+
+        *comeco = pos-1;
+
+        while(!strcmp(v[prox].chaveBusca,chave)) {
+            pos++;
+            retorno = realloc(retorno,sizeof(long long)*(pos));
+            retorno[pos] = v[prox].byteOffset;
+            prox++;
+        }
+
+
+        return retorno;
+
+    }
+
+    // 2 - chamada recursiva para metade do espaco de busca
+    if (strcmp(chave,v[centro].chaveBusca) < 0)
+        // se chave eh menor, fim passa ser o centro-1
+        return busca_binaria(v, chave, ini, centro-1);
+
+    if (strcmp(chave,v[centro].chaveBusca) > 0)
+        // se a chave eh maior, inicio passa ser centro+1
+        return busca_binaria(v, chave, centro+1, fim);
+
+}
+
+
 /*
     Cria um novo registro de cabecalho ZERADO.
     CUIDADO: a funcao NAO o coloca no arquivo.
