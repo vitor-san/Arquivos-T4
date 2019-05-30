@@ -7,7 +7,7 @@
 //TODO: busca binaria modificada (provavelmente com funcao de comparacao generica e vai no sort.c), inserir, remover e atualizar registros em RAM
 
 struct velo {   //vetor estatico de listas ordenadas
-    ListaOrd[26] alfabeto;
+    ListaOrd alfabeto[26];
 };
 
 long long* buscaRegistroIndice(regDadosI *v, char* chave, int ini, int fim, int* comeco) {
@@ -52,11 +52,11 @@ long long* buscaRegistroIndice(regDadosI *v, char* chave, int ini, int fim, int*
     // 2 - chamada recursiva para metade do espaco de busca
     if (strcmp(chave,v[centro].chaveBusca) < 0)
         // se chave eh menor, fim passa ser o centro-1
-        return busca_binaria(v, chave, ini, centro-1);
+        return buscaRegistroIndice(v, chave, ini, centro-1,comeco);
 
     if (strcmp(chave,v[centro].chaveBusca) > 0)
         // se a chave eh maior, inicio passa ser centro+1
-        return busca_binaria(v, chave, centro+1, fim);
+        return buscaRegistroIndice(v, chave, centro+1, fim,comeco);
 
 }
 

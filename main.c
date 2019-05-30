@@ -1504,11 +1504,11 @@ void criaArqIndices() {
 
     //antes de fechar o arquivo, coloco seu status para '1'
     fseek(indexFile, 0, SEEK_SET);  //coloco o ponteiro de escrita no primeiro byte do arquivo
-    fputc('1', outFile);  //sobrescrevo o campo "status" do arquivo binario
+    fputc('1', dataFile);  //sobrescrevo o campo "status" do arquivo binario
 
     free(cabecalho);
     free(registro);
-    fclose(outFile);
+    fclose(indexFile);
     fclose(dataFile);
 
 }
@@ -1552,8 +1552,8 @@ void buscaIndice() {
 
     //carrega arquivo de indice em um vetor
     regDadosI* dadosI = carregaIndiceVetor(indexFile);
-
-    
+    int comeco;
+    long long* posicoesMem = buscaRegistroIndice(dadosI,nome,0,sizeof(dadosI)/sizeof(regDadosI),&comeco);
 
 }
 
@@ -1594,20 +1594,12 @@ int main() {
             matching();
             break;
         case 10:
-<<<<<<< HEAD
         	criaArqIndices();
         	break;
         case 11:
         	buscaIndice();
         	break;
-=======
-            criaArqIndices();
-            break;
-        case 11:
-        	  buscaIndice();
-        	  break;
 
->>>>>>> 99938d4973b7db531b7006ed3e2bcd3d005bd566
         default:
             printf("Opção inválida!\n");
     }
