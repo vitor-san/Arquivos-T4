@@ -10,28 +10,6 @@ struct velo {   //vetor estatico de listas ordenadas
     ListaOrd[26] alfabeto;
 };
 
-int busca_binaria(int* v, int chave, int ini, int fim) {
-
-    // 0 - caso base (busca sem sucesso)
-    if (ini > fim) return FAIL;
-
-    // 1 - calcula ponto central e verifica se chave foi encontrada
-    int centro = (int)((ini+fim)/2.0);
-    if (v[centro] == chave)
-        return centro;
-
-    // 2 - chamada recursiva para metade do espaco de busca
-    if (chave < v[centro])
-        // se chave eh menor, fim passa ser o centro-1
-        return busca_binaria(v, chave, ini, centro-1);
-
-    if (chave > v[centro])
-        // se a chave eh maior, inicio passa ser centro+1
-        return busca_binaria(v, chave, centro+1, fim);
-    
-}
-
-
 long long* buscaRegistroIndice(regDadosI *v, char* chave, int ini, int fim, int* comeco) {
 
     // 0 - caso base (busca sem sucesso)
@@ -275,7 +253,7 @@ SuperLista criaSuperLista() {
         nova->alfabeto[i] = criaListaOrd(compare, freeRegistroIndice, printRegistroIndice);
     }
 
-    
+
 
     return nova;
 }
