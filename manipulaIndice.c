@@ -28,7 +28,7 @@ int busca_binaria(int* v, int chave, int ini, int fim) {
     if (chave > v[centro])
         // se a chave eh maior, inicio passa ser centro+1
         return busca_binaria(v, chave, centro+1, fim);
-    
+
 }
 
 
@@ -218,6 +218,9 @@ void checaFimPaginaIndice(FILE *file) {
     na memoria principal. Sera utilizado para
     fazer as buscas, ja que o custo sera da
     ordem log(n) (por conta da busca binaria).
+
+    Parametros:
+        FILE *file - arquivo de indices
 */
 regDadosI *carregaIndiceVetor(FILE *file) {
     fseek(file, 0, SEEK_END);
@@ -275,13 +278,22 @@ SuperLista criaSuperLista() {
         nova->alfabeto[i] = criaListaOrd(compare, freeRegistroIndice, printRegistroIndice);
     }
 
-    
+
 
     return nova;
 }
 
 /*
+    Instancia uma estrutura de dados que
+    armazenara todos os registros de dados
+    do arquivo de indice, para sua posterior
+    manipulacao na memoria principal.
+    Sera utilizado para fazer as adicoes e
+    remocoes, ja que o custo sera da ordem
+    de n, porem com uma constante muito baixa.
 
+    Parametros:
+        FILE *file - arquivo de indices
 */
 SuperLista carregaIndiceLista(FILE *file) {
     regDadosI reg = criaRegistroIndice();
