@@ -1557,11 +1557,20 @@ int main() {
             matching();
             break;
         case 10:
+<<<<<<< HEAD
         	criaArqIndices();
         	break;
         case 11:
         	buscaIndice();
         	break;
+=======
+            criaArqIndices();
+            break;
+        case 11:
+        	  buscaIndice();
+        	  break;
+
+>>>>>>> 99938d4973b7db531b7006ed3e2bcd3d005bd566
         default:
             printf("Opção inválida!\n");
     }
