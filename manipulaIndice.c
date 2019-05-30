@@ -2,13 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "sort.h"
-#include "listaOrdenada.h"
 
 //TODO: busca binaria modificada (provavelmente com funcao de comparacao generica e vai no sort.c), inserir, remover e atualizar registros em RAM
-
-struct velo {   //vetor estatico de listas ordenadas
-    ListaOrd[26] alfabeto;
-};
 
 int busca_binaria(int* v, int chave, int ini, int fim) {
 
@@ -30,58 +25,6 @@ int busca_binaria(int* v, int chave, int ini, int fim) {
         return busca_binaria(v, chave, centro+1, fim);
 
 }
-
-
-long long* buscaRegistroIndice(regDadosI *v, char* chave, int ini, int fim, int* comeco) {
-
-    // 0 - caso base (busca sem sucesso)
-    if (ini > fim) return NULL;
-
-    // 1 - calcula ponto central e verifica se chave foi encontrada
-    int centro = (int)((ini+fim)/2.0);
-
-    if (!strcmp(v[centro].chaveBusca,chave)) {
-
-        long long* retorno = malloc(sizeof(long long));
-
-        int pos = 0;
-        retorno[pos] = v[centro].byteOffset;
-
-        int prox = centro + 1;
-        int ant = centro - 1;
-
-        while(!strcmp(v[ant].chaveBusca,chave)) {
-            pos++;
-            retorno = realloc(retorno,sizeof(long long)*(pos));
-            retorno[pos] = v[ant].byteOffset;
-            ant--;
-        }
-
-        *comeco = pos-1;
-
-        while(!strcmp(v[prox].chaveBusca,chave)) {
-            pos++;
-            retorno = realloc(retorno,sizeof(long long)*(pos));
-            retorno[pos] = v[prox].byteOffset;
-            prox++;
-        }
-
-
-        return retorno;
-
-    }
-
-    // 2 - chamada recursiva para metade do espaco de busca
-    if (strcmp(chave,v[centro].chaveBusca) < 0)
-        // se chave eh menor, fim passa ser o centro-1
-        return busca_binaria(v, chave, ini, centro-1);
-
-    if (strcmp(chave,v[centro].chaveBusca) > 0)
-        // se a chave eh maior, inicio passa ser centro+1
-        return busca_binaria(v, chave, centro+1, fim);
-
-}
-
 
 /*
     Cria um novo registro de cabecalho ZERADO.
@@ -113,7 +56,7 @@ regCabecI *criaCabecalhoIndice() {
 regDadosI *criaRegistroIndice() {
     regDadosI *registro = malloc(sizeof(regDadosI));
 
-    registro->chaveBusca = NULL;
+    registro->chaveBusca[0] = '\0';
     registro->byteOffset = -1;
 
     return registro;
@@ -172,7 +115,7 @@ void insereCabecalhoIndice(FILE *file, regCabecI *cabecalho) {
     long origin = ftell(file);
     fseek(file, 0, SEEK_SET);   //vou para o inicio do arquivo
 
-    fwrite(&(cabecalho->status), 1, 1, file);  //escrevo o campo "status" no arquivo binario
+    fputc(cabecalho->status, file);  //escrevo o campo "status" no arquivo binario
     fwrite(&(cabecalho->nroRegistros), sizeof(int), 1, file);  //escrevo o campo "topoLista" no arquivo binario
 
     fseek(file, origin, SEEK_SET);
@@ -233,54 +176,56 @@ regDadosI *carregaIndiceVetor(FILE *file) {
 }
 
 /*
-    Funcao de comparacao entre dois registros
-    de dados do arquivo de indices.
-*/
-int compare(void *reg1, void *reg2) {
-    regDadosI *r = (regDadosI *)reg1;
-    regDadosI *s = (regDadosI *)reg2;
-
-    int comp = strcmp(r->chaveBusca, s->chaveBusca);
-
-    if (comp == 0) {
-        long long byteOff1 = r->byteOffset;
-        long long byteOff2 = s->byteOffset;
-        return (r > s) - (r < s);
-    }
-    else return comp;
-}
-
-/*
-    Funcao para imprimir um registro de
-    dados do arquivo de indices.
-*/
-void printRegistroIndice(void *reg) {
-    regDadosI print = *((regDadosI *)reg);
-    printf("Chave de busca: %s\n", print.chaveBusca);
-    printf("Byte offset: %lld\n\n", print.byteOffset);
-}
-
-/*
-    Funcao para liberar memoria, anteriormente
-    alocada pelo indice.
-*/
-void freeRegistroIndice(void *reg) {
-    free(reg);
-}
-
-/*
 
 */
-SuperLista criaSuperLista() {
-    SuperLista nova = malloc(sizeof(SL));
+long long* buscaRegistroIndice(regDadosI *v, char* chave, int ini, int fim, int* comeco) {
 
-    for (int i = 0; i < 26; i++) {
-        nova->alfabeto[i] = criaListaOrd(compare, freeRegistroIndice, printRegistroIndice);
+    // 0 - caso base (busca sem sucesso)
+    if (ini > fim) return NULL;
+
+    // 1 - calcula ponto central e verifica se chave foi encontrada
+    int centro = (int)((ini+fim)/2.0);
+
+    if (!strcmp(v[centro].chaveBusca,chave)) {
+
+        long long* retorno = malloc(sizeof(long long));
+
+        int pos = 0;
+        retorno[pos] = v[centro].byteOffset;
+
+        int prox = centro + 1;
+        int ant = centro - 1;
+
+        while(!strcmp(v[ant].chaveBusca,chave)) {
+            pos++;
+            retorno = realloc(retorno,sizeof(long long)*(pos));
+            retorno[pos] = v[ant].byteOffset;
+            ant--;
+        }
+
+        *comeco = pos-1;
+
+        while(!strcmp(v[prox].chaveBusca,chave)) {
+            pos++;
+            retorno = realloc(retorno,sizeof(long long)*(pos));
+            retorno[pos] = v[prox].byteOffset;
+            prox++;
+        }
+
+
+        return retorno;
+
     }
 
+    // 2 - chamada recursiva para metade do espaco de busca
+    if (strcmp(chave,v[centro].chaveBusca) < 0)
+        // se chave eh menor, fim passa ser o centro-1
+        return busca_binaria(v, chave, ini, centro-1);
 
+    if (strcmp(chave,v[centro].chaveBusca) > 0)
+        // se a chave eh maior, inicio passa ser centro+1
+        return busca_binaria(v, chave, centro+1, fim);
 
-    return nova;
 }
 
 /*
@@ -288,7 +233,7 @@ SuperLista criaSuperLista() {
     armazenara todos os registros de dados
     do arquivo de indice, para sua posterior
     manipulacao na memoria principal.
-    Sera utilizado para fazer as adicoes e
+    Sera utilizada para fazer as adicoes e
     remocoes, ja que o custo sera da ordem
     de n, porem com uma constante muito baixa.
 
@@ -297,6 +242,7 @@ SuperLista criaSuperLista() {
 */
 SuperLista carregaIndiceLista(FILE *file) {
     regDadosI reg = criaRegistroIndice();
+    SuperLista sl = criaSuperLista();
 
     fseek(file, TAMPAG, SEEK_SET);  //vou para o inicio dos registros de dados
 
@@ -310,30 +256,30 @@ SuperLista carregaIndiceLista(FILE *file) {
 
         b = fgetc(file);
     }
+
+    free(reg);
 }
-
-
 
 /*
     Reescreve o arquivo de indices, atualizando-o
-    de acordo com as modificacoes feitas em RAM.
+    de acordo com as modificacoes feitas em memoria
+    principal (por meio da SuperLista).
 
     Parametros:
         FILE *file - arquivo em que sera realizada
     a escrita
-        regDadosI *vetorRAM - vetor que contem os
-    registros modificados
+        regCabecI *cabec - novo cabecalho do arquivo
+        SuperLista base - estrutura a ser utilizada
+    como base para a escrita dos registros de dados
+    do arquivo de indice
 */
-void reescreveArquivoIndice(FILE *file, regDadosI *vetorRAM) {
-    int n = sizeof(vetorRAM)/sizeof(regDadosI); //numero de registros presentes no vetor
-
-    fseek(file, 0, SEEK_SET);
+void reescreveArquivoIndice(FILE *file, regCabecI *cabec, SuperLista base) {
+    fseek(file, 0, SEEK_SET);   //vou para o inicio do arquivo
+    insereCabecalhoIndice(file, cabec);
     fputc('0', file);   //como estou escrevendo em um arquivo, seu status deve ser '0' ate que a escrita acabe
 
-    for (int i = 0; i < n; i++) insereRegistroIndice(file, vetorRAM+i); //insiro o registro no arquivo
+    //escrever o resto
 
-    fseek(file, 0, SEEK_SET);
+    fseek(file, 0, SEEK_SET);   //volto para o inicio do arquivo
     fputc('1', file);   //ja que terminei de escreve no arquivo, seu status vira '1'
 }
-
-//TODO: fazer um vetor[26] de Listas Ordenadas, que ordenam pelo Byte Offset.

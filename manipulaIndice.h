@@ -1,6 +1,8 @@
 #ifndef MANIPULA_INDICE_H
 #define MANIPULA_INDICE_H
+
 #include <stdio.h>
+#include "superLista.h"
 
 #define TAMPAG 32000  //tamanho da pagina de disco (em bytes)
 
@@ -15,9 +17,6 @@ typedef struct {  //define o tipo de dados "registro de dados"
     char chaveBusca[120];
     long long byteOffset;   //byte offset do registro de dados principal referenciado por ele
 } regDadosI;
-
-typedef struct velo SL;
-typedef SL* SuperLista;
 
 /*
 * NOTA: Por simplicidade, adotou-se que todas
@@ -35,15 +34,25 @@ typedef SL* SuperLista;
     regDadosI *criaRegistroIndice();
 //le o registro de cabecalho e o coloca na estrutura passada por referencia
     void leCabecalhoIndice(FILE *file, regCabecI *cabecalho);
+//le um registro de dados e o coloca na estrutura passada por referencia (CUIDADO: anda com o seek)
+    void leRegistroIndice(FILE *file, regDadosI *registro);
 //insere o cabecalho no arquivo binario
     void insereCabecalhoIndice(FILE *file, regCabecI *cabecalho);
 //insere o registro no arquivo binario (CUIDADO: anda com o seek)
     void insereRegistroIndice(FILE *file, regDadosI *registro);
 //verifica o espaco disponivel na pagina de disco atual
     void checaFimPaginaIndice(FILE *file, regDadosI *registro, int tamAntigo);
-//carrega todos os registros do arquivo de indices para a RAM
-    regDadosI *carregaIndiceRAM(FILE *file);
-//reescreve o arquivo de indices, atualizando-o com as modificacoes em RAM (CUIDADO: anda com o seek)
-    void reescreveArquivoIndice(FILE *file, regDadosI *vetorRAM);
+//carrega todos os registros do arquivo de indices para um vetor na RAM
+    regDadosI *carregaIndiceVetor(FILE *file);
+//busca
+
+//carrega todos os registros do arquivo de indices para uma "super lista" na RAM
+    SuperLista carregaIndiceLista(FILE *file);
+//remove
+
+//adiciona
+
+//reescreve o arquivo de indices, atualizando-o com as modificacoes feitas em memoria RAM (CUIDADO: anda com o seek)
+    void reescreveArquivoIndice(FILE *file, SuperLista base);
 
 #endif

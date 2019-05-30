@@ -17,6 +17,7 @@
 #include <string.h>
 #include "escreverTela.h"
 #include "manipulaArquivo.h"
+#include "manipulaIndice.h"
 
 #define THRESHOLD 16384 //chute inicial para o numero maximo de registros de dados em um arquivo binario
 
@@ -1458,13 +1459,21 @@ void matching() {
 }
 
 /*
-
+    Cria um arquivo de indice secundario
+    fortemente ligado, indexado pelo campo
+    "nomeServidor", para um arquivo binario
+    anteriormente gerado por este programa.
+    Os registros logicamente removidos e os
+    registros que possuirem valor nulo para
+    o campo nao serao referenciados nele.
 */
 void criaArqIndices() {
 	char inputFileName[51];   //vai guardar o nome do arquivo de entrada
     char outputFileName[51];   //vai guardar o nome do arquivo de saida
     regCabec *cabecalho = criaCabecalho();  //estrutura que sera utilizada para guardar os valores do registro de cabecalho do arquivo binario de entrada
     regDados *registro = criaRegistro();  //estrutura que sera utilizada para guardar os registros lidos do arquivo binario de entrada
+    regDadosI *cabecInd = criaCabecalhoIndice();  //inicializo o cabecalho do arquivo de indices
+    regDadosI *regisInd = criaRegistroIndice();  //inicializo um registro de dados do arquivo de indices
 
     scanf("%50s %50s", inputFileName, outputFileName);
 
@@ -1495,11 +1504,22 @@ void criaArqIndices() {
 	while (!feof(dataFile)) {
         ungetc(b, dataFile); //"devolvo" o byte lido para o arquivo binario 1
         leRegistro(dataFile, registro);
-        //TODO: armazenar na lista
+
+        if (registro->removido == '-') {
+            //o registro pode ser considerado
+            if (registro->nomeServidor != NULL) {
+                //o registro eh considerado
+                regisInd->byteOffset == ftell(dataFile);    //guardo o byte offset dele
+                strcpy(regisInd->chaveBusca, registro->nomeServidor);   //guardo a chave de busca (o nome do servidor)
+                //adicionaSuperLista();
+            }
+        }
+
+        fseek(dataFile, registro->tamanhoRegistro+5, SEEK_CUR); //vou para o proximo registro de dados
         b = fgetc(dataFile);
     }
 
-    //TODO: colocar no novo arquivo
+    
 
 
     //antes de fechar o arquivo, coloco seu status para '1'
@@ -1510,7 +1530,6 @@ void criaArqIndices() {
     free(registro);
     fclose(outFile);
     fclose(dataFile);
-
 }
 
 /*
@@ -1557,20 +1576,11 @@ int main() {
             matching();
             break;
         case 10:
-<<<<<<< HEAD
         	criaArqIndices();
         	break;
         case 11:
         	buscaIndice();
         	break;
-=======
-            criaArqIndices();
-            break;
-        case 11:
-        	  buscaIndice();
-        	  break;
-
->>>>>>> 99938d4973b7db531b7006ed3e2bcd3d005bd566
         default:
             printf("Opção inválida!\n");
     }
