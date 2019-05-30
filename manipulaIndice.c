@@ -254,7 +254,6 @@ void reescreveArquivoIndice(FILE *file, regCabecI *cabec, SuperLista base) {
     fseek(file, TAMPAG, SEEK_SET);   //vou para a segunda pagina de disco
 
     regDadosI *regAtual;
-    //printSuperLista(base);
     for (int i = 0; i < 26; i++) {
         while (!vaziaListaOrd(base->alfabeto[i])) {
             //pego o primeiro elemento presente na lista
@@ -263,4 +262,7 @@ void reescreveArquivoIndice(FILE *file, regCabecI *cabec, SuperLista base) {
             free(regAtual);
         }
     }
+
+    fseek(file, 0, SEEK_SET);   //vou para o comeco do arquivo
+    fputc('1', file);   //coloco seu status para '1'
 }

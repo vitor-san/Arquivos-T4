@@ -1524,16 +1524,11 @@ void criaArqIndices() {
     reescreveArquivoIndice(indexFile, cabecInd, listaRAM);
     binarioNaTela1(indexFile);
 
-    //antes de fechar o arquivo, coloco seu status para '1'
-    fseek(indexFile, 0, SEEK_SET);  //coloco o ponteiro de escrita no primeiro byte do arquivo
-    fputc('1', indexFile);  //sobrescrevo o campo "status" do arquivo binario
-
     free(cabecalho);
     free(registro);
     free(cabecInd);
     free(regisInd);
     freeSuperLista(listaRAM);
-
     fclose(indexFile);
     fclose(dataFile);
 }
