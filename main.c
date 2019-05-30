@@ -1534,11 +1534,16 @@ void criaArqIndices() {
 }
 
 /*
-
+    Busca, com auxilio do arquivo de indice, registros que
+    satisfacam uma busca determinada pelo usuario (sempre
+    levando em conta o campo "nomeServidor") mostrando-os
+    na tela assim que sao encontrados.
+    Tambem eh mostrado, ao final da execucao, quantas paginas
+    de disco foram acessadas ao todo.
 */
 void buscaIndice() {
-    char inputFileName[51];   //vai guardar o nome do arquivo de entrada
-    char IndiceFileName[51];   //vai guardar o nome do arquivo de saida
+    char dataFileName[51];   //vai guardar o nome do arquivo de dados
+    char indexFileName[51];   //vai guardar o nome do arquivo de indices
     char nome[120];
     char nomeServidor[20];
     regCabec *cabecalho = criaCabecalho();  //estrutura que sera utilizada para guardar os valores do registro de cabecalho do arquivo binario de entrada
@@ -1572,10 +1577,30 @@ void buscaIndice() {
 
     //carrega arquivo de indice em um vetor
     regDadosI* dadosI = carregaIndiceVetor(indexFile);
-    
+
 
 }
 
+/*
+
+*/
+void removeRegInd() {
+
+}
+
+/*
+
+*/
+void adicionaRegInd() {
+
+}
+
+/*
+
+*/
+void comparaBuscas() {
+
+}
 
 /*
   Cuida da execucao do programa.
@@ -1618,6 +1643,15 @@ int main() {
         case 11:
         	buscaIndice();
         	break;
+        case 12:
+            removeRegInd();
+            break;
+        case 13:
+            adicionaRegInd();
+            break;
+        case 14:
+            comparaBuscas();
+            break;
         default:
             printf("Opção inválida!\n");
     }
