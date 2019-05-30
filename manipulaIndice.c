@@ -248,12 +248,10 @@ SuperLista carregaIndiceLista(FILE *file) {
     do arquivo de indice
 */
 void reescreveArquivoIndice(FILE *file, regCabecI *cabec, SuperLista base) {
-    fseek(file, 0, SEEK_SET);   //vou para o inicio do arquivo
-    insereCabecalhoIndice(file, cabec);
-    fputc('0', file);   //como estou escrevendo em um arquivo, seu status deve ser '0' ate que a escrita acabe
+    insereCabecalhoIndice(file, cabec); //geralmente, vem com status '0'
+    fseek(file, TAMPAG, SEEK_SET);   //vou para a segunda pagina de disco
 
-    //escrever o resto
+    
 
-    fseek(file, 0, SEEK_SET);   //volto para o inicio do arquivo
-    fputc('1', file);   //ja que terminei de escreve no arquivo, seu status vira '1'
+    printSuperLista(base);
 }

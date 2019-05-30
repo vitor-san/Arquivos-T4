@@ -108,6 +108,20 @@ void removeSuperLista(SuperLista sl, regDadosI *dado) {
 }
 
 /*
+    Imprime na tela a Super Lista
+    passada por parametro.
+
+    Parametro:
+        SuperLista sl - lista a ser
+    impressa
+*/
+void printSuperLista(SuperLista sl) {
+    if (sl == NULL) return;
+
+    for (int i = 0; i < 26; i++) printListaOrd(sl->alfabeto[i]);
+}
+
+/*
     Libera a memoria alocada para
     a Super Lista.
 

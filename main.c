@@ -1510,7 +1510,7 @@ void criaArqIndices() {
             //o registro pode ser considerado
             if (registro->nomeServidor != NULL) {
                 //o registro eh considerado
-                regisInd->byteOffset == ftell(dataFile);    //guardo o byte offset dele
+                regisInd->byteOffset = ftell(dataFile);    //guardo o byte offset dele
                 strcpy(regisInd->chaveBusca, registro->nomeServidor);   //guardo a chave de busca (o nome do servidor)
                 adicionaSuperLista(listaRAM, regisInd);
                 cabecInd->nroRegistros++;

@@ -19,6 +19,7 @@ typedef struct {  //define o tipo de dados "registro de dados"
 SuperLista criaSuperLista();
 void adicionaSuperLista(SuperLista sl, regDadosI *dado);
 void removeSuperLista(SuperLista sl, regDadosI *dado);
+void printSuperLista(SuperLista sl);
 void freeSuperLista(SuperLista sl);
 
 #endif

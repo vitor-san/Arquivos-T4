@@ -26,7 +26,7 @@
     void insereCabecalhoIndice(FILE *file, regCabecI *cabecalho);
 //insere o registro no arquivo binario (CUIDADO: anda com o seek)
     void insereRegistroIndice(FILE *file, regDadosI *registro);
-//verifica o espaco disponivel na pagina de disco atual (CUIDADO: anda com o seek, pois pode completar a pagina com lixo)
+//verifica o espaco disponivel na pagina de disco atual (CUIDADO: anda com o seek quando completa a pagina com lixo)
     void checaFimPaginaIndice(FILE *file);
 //carrega todos os registros do arquivo de indices para um vetor na RAM
     regDadosI *carregaIndiceVetor(FILE *file);
