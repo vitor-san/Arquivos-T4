@@ -1,8 +1,7 @@
 #ifndef SUPER_LISTA_H
 #define SUPER_LISTA_H
 
-typedef struct velo SL;
-typedef SL* SuperLista;
+#include "listaOrdenada.h"
 
 typedef unsigned char byte; //define o tipo de dados "byte"
 
@@ -15,6 +14,12 @@ typedef struct {  //define o tipo de dados "registro de dados"
     char chaveBusca[120];
     long long byteOffset;   //byte offset do registro de dados principal referenciado por ele
 } regDadosI;
+
+typedef struct velo {   //vetor estatico de listas ordenadas
+    ListaOrd alfabeto[26];
+} SL;
+typedef SL* SuperLista;
+
 
 SuperLista criaSuperLista();
 void adicionaSuperLista(SuperLista sl, regDadosI *dado);

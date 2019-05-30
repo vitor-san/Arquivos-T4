@@ -110,7 +110,9 @@ void insereCabecalhoIndice(FILE *file, regCabecI *cabecalho) {
     a ser gravado
 */
 void insereRegistroIndice(FILE *file, regDadosI *registro) {
-    fwrite(&(registro->chaveBusca), 1, 120, file);
+    int qtdChars = strlen(registro->chaveBusca)+1;
+    fwrite(&(registro->chaveBusca), 1, qtdChars, file);
+    for (int i = 0; i < 120-qtdChars; i++) fputc('@', file);   //completo com lixo
     fwrite(&(registro->byteOffset), 8, 1, file);
 }
 
@@ -251,7 +253,14 @@ void reescreveArquivoIndice(FILE *file, regCabecI *cabec, SuperLista base) {
     insereCabecalhoIndice(file, cabec); //geralmente, vem com status '0'
     fseek(file, TAMPAG, SEEK_SET);   //vou para a segunda pagina de disco
 
-    
-
-    printSuperLista(base);
+    regDadosI *regAtual;
+    //printSuperLista(base);
+    for (int i = 0; i < 26; i++) {
+        while (!vaziaListaOrd(base->alfabeto[i])) {
+            //pego o primeiro elemento presente na lista
+            regAtual = primeiroListaOrd(base->alfabeto[i]);
+            insereRegistroIndice(file, regAtual);
+            free(regAtual);
+        }
+    }
 }

@@ -24,7 +24,7 @@ void destroiBloco(Bloco *b, void (*funcaoFree)(void *dado)) {
     if (b == NULL) return;
 
     b->prox = NULL;
-    funcaoFree(b->dado);
+    if (b->dado != NULL) funcaoFree(b->dado);
     free(b);
 }
 
@@ -83,6 +83,23 @@ void removeListaOrd(ListaOrd l, void *elem) {
         atual = proxAtual;
         if (proxAtual != NULL) proxAtual = proxAtual->prox;
     }
+}
+
+void *primeiroListaOrd(ListaOrd l) {
+    if (l == NULL || l->inicio->prox == NULL) return NULL;
+
+    Bloco *primeiro = l->inicio->prox;
+    void *elem = primeiro->dado;
+    primeiro->dado = NULL;
+    l->inicio->prox = primeiro->prox;
+
+    destroiBloco(primeiro, l->funcaoFree);
+    return elem;
+}
+
+int vaziaListaOrd(ListaOrd l) {
+    if (l == NULL) return -1;
+    return (l->inicio->prox == NULL);
 }
 
 void printListaOrd(ListaOrd l) {

@@ -1,12 +1,7 @@
 #include "superLista.h"
-#include "listaOrdenada.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-struct velo {   //vetor estatico de listas ordenadas
-    ListaOrd alfabeto[26];
-};
 
 /*
     Funcao de comparacao entre dois registros
