@@ -196,6 +196,9 @@ void checaFimPaginaIndice(FILE *file) {
     na memoria principal. Sera utilizado para
     fazer as buscas, ja que o custo sera da
     ordem log(n) (por conta da busca binaria).
+
+    Parametros:
+        FILE *file - arquivo de indices
 */
 regDadosI *carregaIndiceVetor(FILE *file) {
     fseek(file, 0, SEEK_END);
@@ -259,7 +262,16 @@ SuperLista criaSuperLista() {
 }
 
 /*
+    Instancia uma estrutura de dados que
+    armazenara todos os registros de dados
+    do arquivo de indice, para sua posterior
+    manipulacao na memoria principal.
+    Sera utilizado para fazer as adicoes e
+    remocoes, ja que o custo sera da ordem
+    de n, porem com uma constante muito baixa.
 
+    Parametros:
+        FILE *file - arquivo de indices
 */
 SuperLista carregaIndiceLista(FILE *file) {
     regDadosI reg = criaRegistroIndice();
