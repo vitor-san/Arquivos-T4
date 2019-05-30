@@ -1514,8 +1514,8 @@ void criaArqIndices() {
 }
 
 void buscaIndice() {
-	
-} 
+
+}
 
 
 /*
@@ -1554,15 +1554,12 @@ int main() {
             matching();
             break;
         case 10:
-        	criaArqIndices();
-<<<<<<< HEAD
+            criaArqIndices();
             break;
-=======
-        	break;
         case 11:
-        	buscaIndice();
-        	break;
->>>>>>> 0df98b21e7983fd05137a5e50754c546ee01eff8
+        	  buscaIndice();
+        	  break;
+
         default:
             printf("Opção inválida!\n");
     }
