@@ -1468,7 +1468,7 @@ void matching() {
     o campo nao serao referenciados nele.
 */
 void criaArqIndices() {
-	char inputFileName[51];   //vai guardar o nome do arquivo de entrada
+	  char inputFileName[51];   //vai guardar o nome do arquivo de entrada
     char outputFileName[51];   //vai guardar o nome do arquivo de saida
     regCabec *cabecalho = criaCabecalho();  //estrutura que sera utilizada para guardar os valores do registro de cabecalho do arquivo binario de entrada
     regDados *registro = criaRegistro();  //estrutura que sera utilizada para guardar os registros lidos do arquivo binario de entrada
@@ -1524,11 +1524,11 @@ void criaArqIndices() {
 
     //antes de fechar o arquivo, coloco seu status para '1'
     fseek(indexFile, 0, SEEK_SET);  //coloco o ponteiro de escrita no primeiro byte do arquivo
-    fputc('1', outFile);  //sobrescrevo o campo "status" do arquivo binario
+    fputc('1', dataFile);  //sobrescrevo o campo "status" do arquivo binario
 
     free(cabecalho);
     free(registro);
-    fclose(outFile);
+    fclose(indexFile);
     fclose(dataFile);
 }
 
@@ -1536,6 +1536,58 @@ void criaArqIndices() {
 
 */
 void buscaIndice() {
+    char inputFileName[51];   //vai guardar o nome do arquivo de entrada
+    char IndiceFileName[51];   //vai guardar o nome do arquivo de saida
+    char nome[120];
+    char nomeServidor[20];
+    regCabec *cabecalho = criaCabecalho();  //estrutura que sera utilizada para guardar os valores do registro de cabecalho do arquivo binario de entrada
+    regDados *registro = criaRegistro();  //estrutura que sera utilizada para guardar os registros lidos do arquivo binario de entrada
+
+    scanf("%50s %50s %20s %120s", inputFileName, IndiceFileName, nomeServidor, nome);
+
+    FILE *dataFile = fopen(inputFileName, "rb");  //abro o arquivo binario de entrada para leitura
+    FILE *indexFile = fopen(IndiceFileName, "rb");  //crio um novo arquivo binario para escrita (o de indices)
+
+    if (dataFile == NULL || indexFile == NULL) {   //erro na abertura dos arquivos
+        printf("Falha no carregamento do arquivo.");
+        return;
+    }
+
+    leCabecalho(dataFile, cabecalho);
+
+    if (cabecalho->status == '0') {   //se o campo "status" for '0', entao o arquivo esta inconsistente
+      printf("Falha no processamento do arquivo.");
+      return;
+    }
+
+    fseek(dataFile, TAMPAG, SEEK_CUR);  //vou para a segunda pagina de disco (que contem os registros de dados)
+
+    byte b = fgetc(dataFile);
+
+    if (feof(dataFile)) {   //se o primeiro byte da primeira pagina de disco contendo os registros de dados for o final do arquivo, entao nao existem registros para serem mostrados
+      printf("Registro inexistente.");
+      return;
+    }
+
+    //carrega arquivo de indice em um vetor
+    regDadosI* dadosI = carregaIndiceVetor(indexFile);
+    int comeco;
+    long long* posicoesMem = buscaRegistroIndice(dadosI,nome,0,sizeof(dadosI)/sizeof(regDadosI),&comeco);
+    regDados r;
+
+    for (int i = comeco; i >= 0;i--) {
+        fseek(dataFile,posicoesMem[i],SEEK_SET);
+        leRegistro(dataFile,&r);
+        printRegistro(&r);
+    }
+
+    for (int i = comeco+1; i < sizeof(posicoesMem) / sizeof(long long);i++) {
+        fseek(dataFile,posicoesMem[i],SEEK_SET);
+        leRegistro(dataFile,&r);
+        printRegistro(&r);
+    }
+
+
 
 }
 
@@ -1581,6 +1633,10 @@ int main() {
         case 11:
         	buscaIndice();
         	break;
+<<<<<<< HEAD
+=======
+
+>>>>>>> d5167b6479f01928054de88f90212e44a657f10b
         default:
             printf("Opção inválida!\n");
     }

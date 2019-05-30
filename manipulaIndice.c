@@ -3,6 +3,8 @@
 #include <string.h>
 #include "sort.h"
 
+#define FAIL -1
+
 //TODO: busca binaria modificada (provavelmente com funcao de comparacao generica e vai no sort.c), inserir, remover e atualizar registros em RAM
 
 int busca_binaria(int* v, int chave, int ini, int fim) {
