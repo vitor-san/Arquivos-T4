@@ -1,5 +1,5 @@
 all:
-	gcc -o programaTrab1 main.c escreverTela.c manipulaArquivo.c manipulaIndice.c -g
+	gcc -o programaTrab1 main.c escreverTela.c manipulaArquivo.c manipulaIndice.c superLista.c listaOrdenada.c -g
 run:
 	./programaTrab1
 debug:
@@ -17,6 +17,6 @@ diff:
 	make case1 > 1meu.out
 	diff 1meu.out ./casos/1.out
 meld:
-	hexdump -Cv binario-1-index.bin > try.txt
-	hexdump -Cv ./binarios/binario-1-index.bin > target.txt
+	hexdump -Cv binario-1.index > try.txt
+	hexdump -Cv ./binarios/binario-1.index > target.txt
 	meld try.txt target.txt

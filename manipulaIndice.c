@@ -1,32 +1,6 @@
 #include "manipulaIndice.h"
 #include <stdlib.h>
 #include <string.h>
-#include "sort.h"
-
-#define FAIL -1
-
-//TODO: busca binaria modificada (provavelmente com funcao de comparacao generica e vai no sort.c), inserir, remover e atualizar registros em RAM
-
-int busca_binaria(int* v, int chave, int ini, int fim) {
-
-    // 0 - caso base (busca sem sucesso)
-    if (ini > fim) return FAIL;
-
-    // 1 - calcula ponto central e verifica se chave foi encontrada
-    int centro = (int)((ini+fim)/2.0);
-    if (v[centro] == chave)
-        return centro;
-
-    // 2 - chamada recursiva para metade do espaco de busca
-    if (chave < v[centro])
-        // se chave eh menor, fim passa ser o centro-1
-        return busca_binaria(v, chave, ini, centro-1);
-
-    if (chave > v[centro])
-        // se a chave eh maior, inicio passa ser centro+1
-        return busca_binaria(v, chave, centro+1, fim);
-
-}
 
 /*
     Cria um novo registro de cabecalho ZERADO.
@@ -119,6 +93,7 @@ void insereCabecalhoIndice(FILE *file, regCabecI *cabecalho) {
 
     fputc(cabecalho->status, file);  //escrevo o campo "status" no arquivo binario
     fwrite(&(cabecalho->nroRegistros), sizeof(int), 1, file);  //escrevo o campo "topoLista" no arquivo binario
+    for (int i = 5; i < TAMPAG; i++) fputc('@', file);  //completo a pagina de disco com lixo
 
     fseek(file, origin, SEEK_SET);
 }
@@ -214,20 +189,17 @@ long long* buscaRegistroIndice(regDadosI *v, char* chave, int ini, int fim, int*
             prox++;
         }
 
-
         return retorno;
-
     }
 
     // 2 - chamada recursiva para metade do espaco de busca
     if (strcmp(chave,v[centro].chaveBusca) < 0)
         // se chave eh menor, fim passa ser o centro-1
-        return busca_binaria(v, chave, ini, centro-1);
+        return buscaRegistroIndice(v, chave, ini, centro-1, comeco);
 
     if (strcmp(chave,v[centro].chaveBusca) > 0)
         // se a chave eh maior, inicio passa ser centro+1
-        return busca_binaria(v, chave, centro+1, fim);
-
+        return buscaRegistroIndice(v, chave, centro+1, fim, comeco);
 }
 
 /*
@@ -243,7 +215,7 @@ long long* buscaRegistroIndice(regDadosI *v, char* chave, int ini, int fim, int*
         FILE *file - arquivo de indices
 */
 SuperLista carregaIndiceLista(FILE *file) {
-    regDadosI reg = criaRegistroIndice();
+    regDadosI *reg = criaRegistroIndice();
     SuperLista sl = criaSuperLista();
 
     fseek(file, TAMPAG, SEEK_SET);  //vou para o inicio dos registros de dados

@@ -4,6 +4,8 @@
 typedef struct velo SL;
 typedef SL* SuperLista;
 
+typedef unsigned char byte; //define o tipo de dados "byte"
+
 typedef struct {  //define o tipo de dados "registro de cabecalho"
     byte status;
     int nroRegistros;   //numero de registros presentes no arquivo de indice
@@ -15,8 +17,8 @@ typedef struct {  //define o tipo de dados "registro de dados"
 } regDadosI;
 
 SuperLista criaSuperLista();
-void adicionaSuperLista(SuperLista sl, regDadosI *dado)
-void removeSuperLista(SuperLista sl, regDadosI *dado)
+void adicionaSuperLista(SuperLista sl, regDadosI *dado);
+void removeSuperLista(SuperLista sl, regDadosI *dado);
 void freeSuperLista(SuperLista sl);
 
 #endif

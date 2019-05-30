@@ -5,7 +5,7 @@
 #include <string.h>
 
 struct velo {   //vetor estatico de listas ordenadas
-    ListaOrd[26] alfabeto;
+    ListaOrd alfabeto[26];
 };
 
 /*
@@ -83,7 +83,7 @@ void adicionaSuperLista(SuperLista sl, regDadosI *dado) {
     memcpy(copiaDado, dado, sizeof(regDadosI)); //faco uma copia do dado que me foi passado como parametro, para nao perder seu conteudo
 
     int index = dado->chaveBusca[0] - 'A';
-    insereListaOrd(sl->alfabeto[i], copiaDado);
+    insereListaOrd(sl->alfabeto[index], copiaDado);
 }
 
 /*
@@ -103,7 +103,7 @@ void removeSuperLista(SuperLista sl, regDadosI *dado) {
     memcpy(copiaDado, dado, sizeof(regDadosI)); //faco uma copia do dado que me foi passado como parametro, para nao perder seu conteudo
 
     int index = dado->chaveBusca[0] - 'A';
-    removeListaOrd(sl->alfabeto[i], copiaDado);
+    removeListaOrd(sl->alfabeto[index], copiaDado);
     free(copiaDado);
 }
 

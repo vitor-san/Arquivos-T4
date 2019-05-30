@@ -1472,7 +1472,7 @@ void criaArqIndices() {
     char outputFileName[51];   //vai guardar o nome do arquivo de saida
     regCabec *cabecalho = criaCabecalho();  //estrutura que sera utilizada para guardar os valores do registro de cabecalho do arquivo binario de entrada
     regDados *registro = criaRegistro();  //estrutura que sera utilizada para guardar os registros lidos do arquivo binario de entrada
-    regDadosI *cabecInd = criaCabecalhoIndice();  //inicializo o cabecalho do arquivo de indices
+    regCabecI *cabecInd = criaCabecalhoIndice();  //inicializo o cabecalho do arquivo de indices
     regDadosI *regisInd = criaRegistroIndice();  //inicializo um registro de dados do arquivo de indices
     SuperLista listaRAM = criaSuperLista(); //crio uma estrutura de dados que ira guardar todos os registros de dados do arquivo de indice em memoria RAM
 
@@ -1513,6 +1513,7 @@ void criaArqIndices() {
                 regisInd->byteOffset == ftell(dataFile);    //guardo o byte offset dele
                 strcpy(regisInd->chaveBusca, registro->nomeServidor);   //guardo a chave de busca (o nome do servidor)
                 adicionaSuperLista(listaRAM, regisInd);
+                cabecInd->nroRegistros++;
             }
         }
 
