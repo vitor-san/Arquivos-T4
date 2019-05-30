@@ -226,10 +226,14 @@ SuperLista carregaIndiceLista(FILE *file) {
 
     while (!feof(file)) {
         ungetc(b, file);    //"devolvo" o byte lido
-        leRegistroIndice(file, reg);
-
-
-
+        if (b == '@') { //se esta no final de uma pagina de disco
+            int pulo = TAMPAG - (ftell(file)%TAMPAG);
+            fseek(file, pulo, SEEK_CUR);
+        }
+        else {
+            leRegistroIndice(file, reg);
+            adicionaSuperLista(sl, reg);
+        }
         b = fgetc(file);
     }
 
