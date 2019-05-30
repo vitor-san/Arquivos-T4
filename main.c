@@ -1554,6 +1554,21 @@ void buscaIndice() {
     regDadosI* dadosI = carregaIndiceVetor(indexFile);
     int comeco;
     long long* posicoesMem = buscaRegistroIndice(dadosI,nome,0,sizeof(dadosI)/sizeof(regDadosI),&comeco);
+    regDados r;
+
+    for (int i = comeco; i >= 0;i--) {
+        fseek(dataFile,posicoesMem[i],SEEK_SET);
+        leRegistro(dataFile,&r);
+        printRegistro(&r);
+    }
+
+    for (int i = comeco+1; i < sizeof(posicoesMem) / sizeof(long long);i++) {
+        fseek(dataFile,posicoesMem[i],SEEK_SET);
+        leRegistro(dataFile,&r);
+        printRegistro(&r);
+    }
+
+
 
 }
 

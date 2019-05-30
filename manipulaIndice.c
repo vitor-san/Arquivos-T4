@@ -24,14 +24,15 @@ long long* buscaRegistroIndice(regDadosI *v, char* chave, int ini, int fim, int*
 
         int pos = 0;
         retorno[pos] = v[centro].byteOffset;
-
+        pos++;
+        
         int prox = centro + 1;
         int ant = centro - 1;
 
         while(!strcmp(v[ant].chaveBusca,chave)) {
-            pos++;
             retorno = realloc(retorno,sizeof(long long)*(pos));
             retorno[pos] = v[ant].byteOffset;
+            pos++;
             ant--;
         }
 
