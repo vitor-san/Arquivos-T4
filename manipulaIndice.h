@@ -6,18 +6,6 @@
 
 #define TAMPAG 32000  //tamanho da pagina de disco (em bytes)
 
-typedef unsigned char byte; //define o tipo de dados "byte"
-
-typedef struct {  //define o tipo de dados "registro de cabecalho"
-    byte status;
-    int nroRegistros;   //numero de registros presentes no arquivo de indice
-} regCabecI;
-
-typedef struct {  //define o tipo de dados "registro de dados"
-    char chaveBusca[120];
-    long long byteOffset;   //byte offset do registro de dados principal referenciado por ele
-} regDadosI;
-
 /*
 * NOTA: Por simplicidade, adotou-se que todas
 * as funcoes que manipularem registros de dados
@@ -25,8 +13,6 @@ typedef struct {  //define o tipo de dados "registro de dados"
 * Quando a funcao manipular o registro de cabecalho,
 * isso estara explicito em seu nome.
 */
-
-//TODO: Pesquisa, Criacao, Insercao, Remocao
 
 //inicializa um novo registro de cabecalho
     regCabecI *criaCabecalhoIndice();
@@ -48,11 +34,7 @@ typedef struct {  //define o tipo de dados "registro de dados"
 
 //carrega todos os registros do arquivo de indices para uma "super lista" na RAM
     SuperLista carregaIndiceLista(FILE *file);
-//remove
-
-//adiciona
-
 //reescreve o arquivo de indices, atualizando-o com as modificacoes feitas em memoria RAM (CUIDADO: anda com o seek)
-    void reescreveArquivoIndice(FILE *file, SuperLista base);
+    void reescreveArquivoIndice(FILE *file, regCabecI *cabec, SuperLista base);
 
 #endif
