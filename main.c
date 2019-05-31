@@ -1550,7 +1550,11 @@ void buscaIndice() {
     regCabec *cabecalho = criaCabecalho();  //estrutura que sera utilizada para guardar os valores do registro de cabecalho do arquivo binario de entrada
     regDados *registro = criaRegistro();  //estrutura que sera utilizada para guardar os registros lidos do arquivo binario de entrada
 
+<<<<<<< HEAD
     scanf("%50s %50s %20s %[^\n]", dataFileName, indexFileName, nomeServidor, nome);
+=======
+    scanf("%50s %50s %20s %120s", dataFileName, indexFileName, nomeServidor, nome);
+>>>>>>> 2540a2c044f51dd6cddf7e2c23442d28db894eb2
 
     FILE *dataFile = fopen(dataFileName, "rb");  //abro o arquivo binario de entrada para leitura
     FILE *indexFile = fopen(indexFileName, "rb");  //crio um novo arquivo binario para escrita (o de indices)
@@ -1601,10 +1605,262 @@ void buscaIndice() {
 }
 
 /*
+    Atualiza os registros do arquivo de indice
+    que estao em RAM, removendo entre eles
+    aquele que referencia um registro que acabou
+    de ser logicamente removido.
 
+    Parametros:
+        SuperLista sl - indices a serem considerados
+        char *nomeServidor - valor deste campo do
+    registro logicamente removido
+        long long byteOffset - byte offset do registro
+    logicamente removido
+*/
+void atualizaRemIndice(SuperLista sl, char *nomeServidor, long long byteOffset, regCabecI *cabecalho) {
+    regDadosI *removido = criaRegistroIndice();
+    strcpy(removido->chaveBusca, nomeServidor);
+    removido->byteOffset = byteOffset;
+    removeSuperLista(sl, removido);
+    cabecalho->nroRegistros--;
+    free(removido);
+}
+
+/*
+    Busca no arquivo binario registros que satisfacam
+    um criterio de busca determinado pelo usuario,
+    removendo-os logicamente assim que sao encontrados.
+    Apos isso, o indice referente a esse registro eh
+    removido do arquivo de indices.
+    O usuario deve informar quantas buscas diferentes
+    deseja fazer perante uma mesma execucao. Alem disso,
+    deve informar, em cada uma delas, o nome e o valor
+    do campo a ser buscado.
 */
 void removeRegInd() {
+    char dataFileName[51];   //vai guardar o nome do arquivo de dados
+    char indexFileName[51]; //vai guardar o nome do arquivo de indices
+    int n;      //numero de remocoes a serem realizadas
+    char nomeCampo[51];    //campo a ser considerado na busca
+    byte valorCampo[200];    //valor a ser considerado na busca
+    regDados *registro = criaRegistro();  //estrutura que será utilizada para guardar os registros lidos do arquivo binario
+    regCabecI *cabecInd = criaCabecalhoIndice();  //estrutura que guardara o cabecalho do arquivo de indices
 
+    scanf("%50s %50s", dataFileName, indexFileName);
+    scanf("%d", &n);
+
+    FILE *dataFile = fopen(dataFileName, "rb+");  //abre o arquivo "dataFileName" para leitura e escrita binária
+    FILE *indexFile = fopen(indexFileName, "rb");  //abre o arquivo "dataFileName" para leitura binária
+
+    if (dataFile == NULL || indexFile == NULL) {   //erro na abertura do arquivo
+      printf("Falha no processamento do arquivo.");
+      return;
+    }
+
+    if (fgetc(dataFile) == '0') {   //se o byte "status" for '0', entao o arquivo esta inconsistente
+      printf("Falha no processamento do arquivo.");
+      return;
+    }
+    ungetc('0', dataFile);  //como o arquivo foi aberto para escrita, seu status deve ser '0'
+
+    if (fgetc(indexFile) == '0') {   //se o byte "status" for '0', entao o arquivo esta inconsistente
+      printf("Falha no processamento do arquivo.");
+      return;
+    }
+    ungetc('0', indexFile);  //como o arquivo foi aberto para escrita, seu status deve ser '0'
+
+    SuperLista indiceRAM = carregaIndiceLista(indexFile);  //carrego o arquivo de indices para a RAM
+    leCabecalhoIndice(indexFile, cabecInd);
+    fclose(indexFile);  //a partir de agora, so trabalho com o indice em memoria
+
+    fseek(dataFile, TAMPAG, SEEK_CUR);  //pulo o registro de cabecalho do arquivo de dados
+
+    for (int i = 0; i < n; i++) {
+        memset(nomeCampo, 0, 51);   //limpo o vetor (setando tudo para 0)
+        memset(valorCampo, 0, 200);  //limpo o vetor (setando tudo para 0)
+
+        scanf("%50s %[^\r\n]", nomeCampo, valorCampo);  //paro de ler antes da quebra de linha
+
+        byte b = fgetc(dataFile);
+
+        if (feof(dataFile)) {   //se o primeiro byte da primeira pagina de disco contendo os registros de dados for o final do arquivo, entao nao existem registros para serem mostrados
+          printf("Registro inexistente.");
+          return;
+        }
+
+        while (!feof(dataFile)) {
+            ungetc(b, dataFile); //"devolvo" o byte lido para o arquivo binario
+            leRegistro(dataFile, registro);
+            int indicTam = registro->tamanhoRegistro;
+
+            if (registro->removido == '*') {   //o registro esta removido
+                fseek(dataFile, indicTam+5, SEEK_CUR);   //se o registro esta removido, apenas o pulo
+            }
+            else if (registro->removido == '-') {   //o registro pode ser manipulado
+                if (!strcmp(nomeCampo, "idServidor")) {    //se o campo a ser buscado eh "idServidor"...
+                    if (registro->idServidor == atoi(valorCampo)) {    //se o valor do campo no registro lido eh igual ao do dado como criterio de busca...
+                        long long byteOffset = ftell(dataFile);  //guardo o byte offset do registro a ser logicamente removido
+                        fputc('*', dataFile);    //marco o registro como REMOVIDO
+                        adicionaLista(dataFile, byteOffset, indicTam);    //adiciono o registro a lista de removidos
+                        completaLixo(dataFile);  //sobreescrevo todos os campos do registro (menos encadeamentoLista) com lixo
+                        if (registro->nomeServidor != NULL) atualizaRemIndice(indiceRAM, registro->nomeServidor, byteOffset, cabecInd);   //atualiza a remocao no indice
+                        break;  //ja que o numero do idServidor eh unico, se acharmos um igual nao precisaremos mais continuar procurando
+                    }
+                    else {
+                        fseek(dataFile, indicTam+5, SEEK_CUR);   //vou para o proximo registro (+5 por conta dos bytes do indicador de tamanho e do campo "removido")
+                    }
+                }
+
+                else if (!strcmp(nomeCampo, "salarioServidor")) {    //se o campo a ser buscado eh "salarioServidor"...
+                    if (!strcmp(valorCampo, "NULO")) {  //se o valor a ser buscado eh nulo...
+                        if (registro->salarioServidor == -1) {
+                            long long byteOffset = ftell(dataFile);  //guardo o byte offset do registro a ser logicamente removido
+                            fputc('*', dataFile);    //marco o registro como REMOVIDO
+                            adicionaLista(dataFile, byteOffset, indicTam);    //adiciono o registro a lista de removidos
+                            completaLixo(dataFile);  //sobreescrevo todos os campos do registro (menos encadeamentoLista) com lixo
+                            if (registro->nomeServidor != NULL) atualizaRemIndice(indiceRAM, registro->nomeServidor, byteOffset, cabecInd);   //atualiza a remocao no indice
+                            fseek(dataFile, indicTam+4, SEEK_CUR);    //vou para o proximo registro (+4 por conta dos bytes do indicador de tamanho, que ele mesmo nao contabiliza)
+                        }
+                        else {
+                            fseek(dataFile, indicTam+5, SEEK_CUR);   //vou para o proximo registro (+5 por conta dos bytes do indicador de tamanho e do campo "removido")
+                        }
+                    }
+                    else {  //o valor a ser buscado nao eh nulo
+                        if (registro->salarioServidor == atof(valorCampo)) {    //se o valor lido eh igual ao do dado como criterio de busca...
+                            long long byteOffset = ftell(dataFile);  //guardo o byte offset do registro a ser logicamente removido
+                            fputc('*', dataFile);    //marco o registro como REMOVIDO
+                            adicionaLista(dataFile, byteOffset, indicTam);    //adiciono o registro a lista de removidos
+                            completaLixo(dataFile);  //sobreescrevo todos os campos do registro (menos encadeamentoLista) com lixo
+                            if (registro->nomeServidor != NULL) atualizaRemIndice(indiceRAM, registro->nomeServidor, byteOffset, cabecInd);   //atualiza a remocao no indice
+                            fseek(dataFile, indicTam+4, SEEK_CUR);    //vou para o proximo registro (+4 por conta dos bytes do indicador de tamanho, que ele mesmo nao contabiliza)
+                        }
+                        else {
+                            fseek(dataFile, indicTam+5, SEEK_CUR);   //vou para o proximo registro (+5 por conta dos bytes do indicador de tamanho e do campo "removido")
+                        }
+                    }
+                }
+
+                else if (!strcmp(nomeCampo, "telefoneServidor")) {    //se o campo a ser buscado eh "telefoneServidor"...
+                    if (!strcmp(valorCampo, "NULO")) {  //se o valor a ser buscado eh nulo...
+                        if (registro->telefoneServidor[0] == '\0') {
+                            long long byteOffset = ftell(dataFile);  //guardo o byte offset do registro a ser logicamente removido
+                            fputc('*', dataFile);    //marco o registro como REMOVIDO
+                            adicionaLista(dataFile, byteOffset, indicTam);    //adiciono o registro a lista de removidos
+                            completaLixo(dataFile);  //sobreescrevo todos os campos do registro (menos encadeamentoLista) com lixo
+                            if (registro->nomeServidor != NULL) atualizaRemIndice(indiceRAM, registro->nomeServidor, byteOffset, cabecInd);   //atualiza a remocao no indice
+                            fseek(dataFile, indicTam+4, SEEK_CUR);    //vou para o proximo registro (+4 por conta dos bytes do indicador de tamanho, que ele mesmo nao contabiliza)
+                        }
+                        else {
+                            fseek(dataFile, indicTam+5, SEEK_CUR);   //vou para o proximo registro (+5 por conta dos bytes do indicador de tamanho e do campo "removido")
+                        }
+                    }
+                    else {  //o valor a ser buscado nao eh nulo
+                        if (!strcmp(registro->telefoneServidor, valorCampo)) {    //se o valor lido eh igual ao do dado como criterio de busca...
+                            long long byteOffset = ftell(dataFile);  //guardo o byte offset do registro a ser logicamente removido
+                            fputc('*', dataFile);    //marco o registro como REMOVIDO
+                            adicionaLista(dataFile, byteOffset, indicTam);    //adiciono o registro a lista de removidos
+                            completaLixo(dataFile);  //sobreescrevo todos os campos do registro (menos encadeamentoLista) com lixo
+                            if (registro->nomeServidor != NULL) atualizaRemIndice(indiceRAM, registro->nomeServidor, byteOffset, cabecInd);   //atualiza a remocao no indice
+                            fseek(dataFile, indicTam+4, SEEK_CUR);    //vou para o proximo registro (+4 por conta dos bytes do indicador de tamanho, que ele mesmo nao contabiliza)
+                        }
+                        else {
+                            fseek(dataFile, indicTam+5, SEEK_CUR);   //vou para o proximo registro (+5 por conta dos bytes do indicador de tamanho e do campo "removido")
+                        }
+                    }
+                }
+
+                else if (!strcmp(nomeCampo, "nomeServidor")) {    //se o campo a ser buscado eh "nomeServidor"...
+                    if (!strcmp(valorCampo, "NULO")) {  //se o valor a ser buscado eh nulo...
+                        if (registro->nomeServidor == NULL) {
+                            long long byteOffset = ftell(dataFile);  //guardo o byte offset do registro a ser logicamente removido
+                            fputc('*', dataFile);    //marco o registro como REMOVIDO
+                            adicionaLista(dataFile, byteOffset, indicTam);    //adiciono o registro a lista de removidos
+                            completaLixo(dataFile);  //sobreescrevo todos os campos do registro (menos encadeamentoLista) com lixo
+                            if (registro->nomeServidor != NULL) atualizaRemIndice(indiceRAM, registro->nomeServidor, byteOffset, cabecInd);   //atualiza a remocao no indice
+                            fseek(dataFile, indicTam+4, SEEK_CUR);    //vou para o proximo registro (+4 por conta dos bytes do indicador de tamanho, que ele mesmo nao contabiliza)
+                        }
+                        else {
+                            fseek(dataFile, indicTam+5, SEEK_CUR);   //vou para o proximo registro (+5 por conta dos bytes do indicador de tamanho e do campo "removido")
+                        }
+                    }
+                    else {  //o valor a ser buscado nao eh nulo
+                        char *valorSemAspas = strtok(valorCampo, "\"");     //retiro as aspas da string (para efeitos de comparacao)
+
+                        if (registro->nomeServidor != NULL && !strcmp(registro->nomeServidor, valorSemAspas)) {    //se o valor lido eh igual ao do dado como criterio de busca...
+                            long long byteOffset = ftell(dataFile);  //guardo o byte offset do registro a ser logicamente removido
+                            fputc('*', dataFile);    //marco o registro como REMOVIDO
+                            adicionaLista(dataFile, byteOffset, indicTam);    //adiciono o registro a lista de removidos
+                            completaLixo(dataFile);  //sobreescrevo todos os campos do registro (menos encadeamentoLista) com lixo
+                            if (registro->nomeServidor != NULL) atualizaRemIndice(indiceRAM, registro->nomeServidor, byteOffset, cabecInd);   //atualiza a remocao no indice
+                            fseek(dataFile, indicTam+4, SEEK_CUR);    //vou para o proximo registro (+4 por conta dos bytes do indicador de tamanho, que ele mesmo nao contabiliza)
+                        }
+                        else {
+                            fseek(dataFile, indicTam+5, SEEK_CUR);   //vou para o proximo registro (+5 por conta dos bytes do indicador de tamanho e do campo "removido")
+                        }
+                    }
+                }
+
+                else if (!strcmp(nomeCampo, "cargoServidor")) {    //se o campo a ser buscado eh "cargoServidor"...
+                    char *valorSemAspas = strtok(valorCampo, "\"");     //retiro as aspas da string (para efeitos de comparacao)
+
+                    if (!strcmp(valorCampo, "NULO")) {  //se o valor a ser buscado eh nulo...
+                        if (registro->cargoServidor == NULL) {
+                            long long byteOffset = ftell(dataFile);  //guardo o byte offset do registro a ser logicamente removido
+                            fputc('*', dataFile);    //marco o registro como REMOVIDO
+                            adicionaLista(dataFile, byteOffset, indicTam);    //adiciono o registro a lista de removidos
+                            completaLixo(dataFile);  //sobreescrevo todos os campos do registro (menos encadeamentoLista) com lixo
+                            if (registro->nomeServidor != NULL) atualizaRemIndice(indiceRAM, registro->nomeServidor, byteOffset, cabecInd);   //atualiza a remocao no indice
+                            fseek(dataFile, indicTam+4, SEEK_CUR);    //vou para o proximo registro (+4 por conta dos bytes do indicador de tamanho, que ele mesmo nao contabiliza)
+                        }
+                        else {
+                            fseek(dataFile, indicTam+5, SEEK_CUR);   //vou para o proximo registro (+5 por conta dos bytes do indicador de tamanho e do campo "removido")
+                        }
+                    }
+                    else {  //o valor a ser buscado nao eh nulo
+                        if (registro->cargoServidor != NULL && !strcmp(registro->cargoServidor, valorSemAspas)) {    //se o valor lido eh igual ao do dado como criterio de busca...
+                            long long byteOffset = ftell(dataFile);  //guardo o byte offset do registro a ser logicamente removido
+                            fputc('*', dataFile);    //marco o registro como REMOVIDO
+                            adicionaLista(dataFile, byteOffset, indicTam);    //adiciono o registro a lista de removidos
+                            completaLixo(dataFile);  //sobreescrevo todos os campos do registro (menos encadeamentoLista) com lixo
+                            if (registro->nomeServidor != NULL) atualizaRemIndice(indiceRAM, registro->nomeServidor, byteOffset, cabecInd);   //atualiza a remocao no indice
+                            fseek(dataFile, indicTam+4, SEEK_CUR);    //vou para o proximo registro (+4 por conta dos bytes do indicador de tamanho, que ele mesmo nao contabiliza)
+                        }
+                        else {
+                            fseek(dataFile, indicTam+5, SEEK_CUR);   //vou para o proximo registro (+5 por conta dos bytes do indicador de tamanho e do campo "removido")
+                        }
+                    }
+                }
+
+                else {  //o usuario digitou errado o nome do campo
+                    printf("Falha no processamento do arquivo.");
+                    return;
+                }
+            }
+
+            b = fgetc(dataFile);
+        }
+
+        fseek(dataFile, TAMPAG, SEEK_SET);    //volto o ponteiro de leitura para o inicio da segunda pagina de disco (a que inicia os registros de dados)
+    }
+
+    indexFile = fopen(indexFileName, "wb+");  //abre o arquivo "dataFileName" para escrita binária
+
+    if (indexFile == NULL) {   //erro na abertura do arquivo
+      printf("Falha no processamento do arquivo.");
+      return;
+    }
+
+    reescreveArquivoIndice(indexFile, cabecInd, indiceRAM);
+    binarioNaTela1(indexFile);
+
+    //antes de fechar os arquivo, coloco seus status para '1'
+    fseek(dataFile, 0, SEEK_SET);  //coloco o ponteiro de escrita no primeiro byte do arquivo
+    fputc('1', dataFile);  //sobrescrevo o campo "status" do arquivo binario
+
+    freeRegistro(registro);
+    freeSuperLista(indiceRAM);
+    fclose(dataFile);
+    fclose(indexFile);
 }
 
 /*
