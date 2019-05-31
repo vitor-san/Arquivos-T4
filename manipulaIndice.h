@@ -31,7 +31,7 @@
 //carrega todos os registros do arquivo de indices para um vetor na RAM
     regDadosI *carregaIndiceVetor(FILE *file);
 //busca o registro no arquivo de indices
-
+    long long* buscaRegistroIndice(regDadosI *v, char* chave, int ini, int fim, int* comeco, int* tam);
 //carrega todos os registros do arquivo de indices para uma "super lista" na RAM
     SuperLista carregaIndiceLista(FILE *file);
 //reescreve o arquivo de indices, atualizando-o com as modificacoes feitas em memoria RAM (CUIDADO: anda com o seek)

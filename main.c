@@ -1546,13 +1546,14 @@ void buscaIndice() {
     char indexFileName[51];   //vai guardar o nome do arquivo de indices
     char nome[120];
     char nomeServidor[20];
+    regCabecI *cabecalhoI = criaCabecalhoIndice();
     regCabec *cabecalho = criaCabecalho();  //estrutura que sera utilizada para guardar os valores do registro de cabecalho do arquivo binario de entrada
     regDados *registro = criaRegistro();  //estrutura que sera utilizada para guardar os registros lidos do arquivo binario de entrada
 
-    scanf("%50s %50s %20s %120s", inputFileName, IndiceFileName, nomeServidor, nome);
+    scanf("%50s %50s %20s %[^\n]", dataFileName, indexFileName, nomeServidor, nome);
 
-    FILE *dataFile = fopen(inputFileName, "rb");  //abro o arquivo binario de entrada para leitura
-    FILE *indexFile = fopen(IndiceFileName, "rb");  //crio um novo arquivo binario para escrita (o de indices)
+    FILE *dataFile = fopen(dataFileName, "rb");  //abro o arquivo binario de entrada para leitura
+    FILE *indexFile = fopen(indexFileName, "rb");  //crio um novo arquivo binario para escrita (o de indices)
 
     if (dataFile == NULL || indexFile == NULL) {   //erro na abertura dos arquivos
         printf("Falha no carregamento do arquivo.");
@@ -1560,6 +1561,8 @@ void buscaIndice() {
     }
 
     leCabecalho(dataFile, cabecalho);
+    leCabecalhoIndice(indexFile, cabecalhoI);
+
 
     if (cabecalho->status == '0') {   //se o campo "status" for '0', entao o arquivo esta inconsistente
       printf("Falha no processamento do arquivo.");
@@ -1577,6 +1580,22 @@ void buscaIndice() {
 
     //carrega arquivo de indice em um vetor
     regDadosI* dadosI = carregaIndiceVetor(indexFile);
+
+    int comeco,tam;
+    long long* posDados = buscaRegistroIndice(dadosI,nome,0,cabecalhoI->nroRegistros,&comeco,&tam);
+    regDados* r = criaRegistro();
+
+    for (int i = comeco; i >= 0; i--) {
+        fseek(dataFile,posDados[i],SEEK_SET);
+        leRegistro(dataFile,r);
+        mostraRegistroMeta(cabecalho,r);
+    }
+
+    for (int i = comeco+1; i < tam; i++) {
+        fseek(dataFile,posDados[i],SEEK_SET);
+        leRegistro(dataFile,r);
+        mostraRegistroMeta(cabecalho,r);
+    }
 
 
 }
