@@ -8,16 +8,21 @@ val:
 	valgrind --leak-check=full --track-origins=yes ./programaTrab4
 zip:
 	zip trab4.zip main.c escreverTela.c escreverTela.h manipulaArquivo.c manipulaArquivo.h manipulaIndice.c manipulaIndice.h superLista.c superLista.h listaOrdenada.c listaOrdenada.h Makefile
-case9:
-	cp -t $(shell pwd) ./casos/9.in
-	cp -t $(shell pwd) ./binarios/binario-9.bin
-	cp -t $(shell pwd) ./binarios/binario-9.index
+bin10:
+	cp -t $(shell pwd) ./casos/10.in
+	cp -t $(shell pwd) ./binarios/binario-10.bin
+	cp -t $(shell pwd) ./binarios/binario-10.index
 	make all
-	make run < 9.in
+case10:
+	cp -t $(shell pwd) ./casos/10.in
+	cp -t $(shell pwd) ./binarios/binario-10.bin
+	cp -t $(shell pwd) ./binarios/binario-10.index
+	make all
+	make run < 10.in
 diff:
-	make case9 > 9meu.out
-	diff 9meu.out ./casos/9.out
+	make case10 > 10meu.out
+	diff 10meu.out ./casos/10.out
 meld:
-	hexdump -Cv binario-9.index > try.txt
-	hexdump -Cv ./binarios/binario-9-depois.index > target.txt
+	hexdump -Cv binario-10.index > try.txt
+	hexdump -Cv ./binarios/binario-10-depois.index > target.txt
 	meld try.txt target.txt

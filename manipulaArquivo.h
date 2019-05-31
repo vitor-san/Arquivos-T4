@@ -58,6 +58,8 @@ typedef struct {  //define o tipo de dados "registro de dados"
     void completaLixo(FILE *file);
 //insere o registro na primeira posicao disponivel, de acordo com a lista de removidos
     long long achaPosicaoInsere(FILE *file, regDados *registro, long long ultimoBO);
+//insere o registro na primeira posicao disponivel, de acordo com a lista de removidos, e deixa o seek no final desse registro
+    long long achaPosicaoInsereSeek(FILE *file, regDados *registro, long long ultimoBO);
 //imprime na tela o registro de dados + os metadados referentes a cada campo
     void mostraRegistroMeta(regCabec *cabecalho, regDados *registro);
 //imprime na tela o registro de dados passado como parametro

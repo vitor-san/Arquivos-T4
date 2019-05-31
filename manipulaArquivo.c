@@ -474,6 +474,107 @@ long long achaPosicaoInsere(FILE *file, regDados *registro, long long ultimoBO) 
 }
 
 /*
+    Procura na lista de removidos um espaco que
+    comporte o novo registro a ser inserido. Caso
+    nao encontre nenhum, insere-o no final. Alem
+    disso, a funcao anda, propositalmente, com o
+    seek do arquivo (ponteiro de leitura).
+
+    Parametros:
+        FILE *file - arquivo binario a ser considerado
+        regDados *registro - registro a ser inserido
+        long long ultimoBO - byte offset do ultimo
+    registro do arquivo
+    Retorno:
+        long long - byte offset do ultimo registro do
+    arquivo (apos as modificacoes)
+*/
+long long achaPosicaoInsereSeek(FILE *file, regDados *registro, long long ultimoBO) {
+    fseek(file, 1, SEEK_SET);  //coloco o ponteiro de leitura no comeco do campo "topoLista"
+
+    long long pos, posAnt, posProx, posUlt;
+    int tam = 0;
+
+    fread(&posProx, 8, 1, file);    //leio o campo "topoLista"
+
+    if (posProx == -1L) {
+        //insiro o registro no final do arquivo
+        fseek(file, 0, SEEK_END);
+        posUlt = ftell(file);
+
+        if (ultimoBO != -1) {
+            //verifico o espaco disponivel na pagina de disco atual
+            if ( (ftell(file)%TAMPAG + registro->tamanhoRegistro + 5) > TAMPAG ) { //se nao ha espaco suficiente... (+5 por conta do campo "removido" e do indicador de tamanho, que nao sao contabilizados no tamanho do registro)
+                //insiro o registro em uma outra pagina de disco, mas antes vou precisar completar a pagina de disco atual com lixo e trocar o indicador de tamanho do ultimo registro dela, para que ele contabilize esse lixo tambem
+                int diff = TAMPAG - ftell(file)%TAMPAG;  //quantidade necessaria de lixo para completar a pagina de disco
+
+                int tamAntigo;
+                fread(&tamAntigo, 4, 1, file);
+                fseek(file, -4, SEEK_CUR);
+
+                int tamNovo = diff + tamAntigo;  //calculo o valor do novo indicador de tamanho
+                fwrite(&tamNovo, 4, 1, file); //sobreescrevo o valor do indicador de tamanho antigo pelo novo
+
+                fseek(file, tamAntigo, SEEK_CUR);  //coloco o ponteiro no final do ultimo registro
+                for (int i = 0; i < diff; i++) fputc('@', file);  //completo com lixo
+            }
+
+        }
+
+        insereRegistro(file, registro);
+    }
+    else {
+        while (posProx != -1L && tam < registro->tamanhoRegistro) {
+            posAnt = ftell(file) - 13;  //-13 para descontar os bytes ja lidos
+            fseek(file, posProx, SEEK_SET);  //vou para o proximo registro no encadeamento
+
+            fgetc(file);    //"joga fora" o primeiro byte do registro
+            fread(&tam, 4, 1, file);   //le o indicador de tamanho do registro
+            fread(&posProx, 8, 1, file);   //le o byte offset do proximo registro no encadeamento
+        }
+
+        if (tam >= registro->tamanhoRegistro) {  //inserir no "meio"
+            pos = ftell(file) - 13;    //retiro os 13 bytes que já havia lido
+            fseek(file, posAnt+5, SEEK_SET);   //somo 5 aos bytes do byte offset para pular o campo "removido" e o indicador de tamanho do registro de dados
+            fwrite(&posProx, 8, 1, file);     //sobreescrevo o campo "encadeamentoLista", que agora aponta para o próximo registro depois do que foi sobreescrito pelo registro adicionado
+
+            fseek(file, pos, SEEK_SET);
+            registro->tamanhoRegistro = -1;  //como o registro vai ser inserido em um espaco removido logicamente, seu indicador de tamanho nao deve ser escrito, permanecendo o do registro anterior a ele
+            insereRegistro(file, registro);
+            posUlt = -1;
+        }
+        else {   //inserir no final
+            fseek(file, 0, SEEK_END);
+
+            if (ultimoBO != -1) {
+                //verifico o espaco disponivel na pagina de disco atual
+                if ( (ftell(file)%TAMPAG + registro->tamanhoRegistro + 5) > TAMPAG ) { //se nao ha espaco suficiente... (+5 por conta do campo "removido" e do indicador de tamanho, que nao sao contabilizados no tamanho do registro)
+                    //insiro o registro em uma outra pagina de disco, mas antes vou precisar completar a pagina de disco atual com lixo e trocar o indicador de tamanho do ultimo registro dela, para que ele contabilize esse lixo tambem
+                    int diff = TAMPAG - ftell(file)%TAMPAG;  //quantidade necessaria de lixo para completar a pagina de disco
+
+                    fseek(file, ultimoBO+1, SEEK_SET);    //vou para o comeco do indicador de tamanho do ultimo registro do arquivo
+                    int tamAntigo;
+                    fread(&tamAntigo, 4, 1, file);
+                    fseek(file, -4, SEEK_CUR);
+
+                    int tamNovo = diff + tamAntigo;  //calculo o valor do novo indicador de tamanho
+                    fwrite(&tamNovo, 4, 1, file); //sobreescrevo o valor do indicador de tamanho antigo pelo novo
+
+                    fseek(file, tamAntigo, SEEK_CUR);  //coloco o ponteiro no final do ultimo registro
+                    for (int i = 0; i < diff; i++) fputc('@', file);  //completo com lixo
+                }
+
+            }
+
+            posUlt = ftell(file);
+            insereRegistro(file, registro);
+        }
+    }
+
+    return posUlt;
+}
+
+/*
     Funcao que imprime na tela, organizadamente,
     um registro de um arquivo binario gerado
     anteriormente por este programa. A funcao

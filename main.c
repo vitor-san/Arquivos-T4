@@ -1646,8 +1646,8 @@ void removeRegInd() {
     }
     ungetc('0', indexFile);  //como o arquivo foi aberto para escrita, seu status deve ser '0'
 
-    SuperLista indiceRAM = carregaIndiceLista(indexFile);  //carrego o arquivo de indices para a RAM
     leCabecalhoIndice(indexFile, cabecInd);
+    SuperLista indiceRAM = carregaIndiceLista(indexFile);  //carrego o arquivo de indices para a RAM
     fclose(indexFile);  //a partir de agora, so trabalho com o indice em memoria
 
     fseek(dataFile, TAMPAG, SEEK_CUR);  //pulo o registro de cabecalho do arquivo de dados
@@ -1841,10 +1841,177 @@ void removeRegInd() {
 }
 
 /*
+    Atualiza os registros do arquivo de indice
+    que estao em RAM, adicionando entre eles
+    aquele que referencia um registro que acabou
+    de ser adicionado ao arquivo principal.
 
+    Parametros:
+        SuperLista sl - indices a serem considerados
+        char *nomeServidor - valor deste campo do
+    registro adicionado
+        long long byteOffset - byte offset do registro
+    adicionado
+*/
+void atualizaAdcIndice(SuperLista sl, char *nomeServidor, long long byteOffset, regCabecI *cabecalho) {
+    regDadosI *adicionado = criaRegistroIndice();
+    strcpy(adicionado->chaveBusca, nomeServidor);
+    adicionado->byteOffset = byteOffset;
+    adicionaSuperLista(sl, adicionado);
+    cabecalho->nroRegistros++;
+    free(adicionado);
+}
+
+/*
+    Adiciona novos registros ao arquivo binario,
+    reaproveitando os espacos deixados pelos
+    registros logicamente removidos. Para tanto,
+    percorre-se a lista de removidos ate que se
+    encontre um espaco em que caiba o novo registro.
+    Caso nao se encontre nenhum espaco grande o
+    suficiente, o registro eh escrito no final do
+    arquivo. Logo depois de adicionado, se o registro
+    nao tem campo "nomeServidor" NULO, uma referencia
+    a ele eh criada no arquivo de indices.
+    O usuario deve informar quantas insercoes
+    diferentes deseja fazer perante uma mesma execucao.
+    Alem disso, deve informar, em cada uma delas, o
+    valor dos campos do registro.
 */
 void adicionaRegInd() {
+    char dataFileName[51];   //vai guardar o nome do arquivo de dados
+    char indexFileName[51]; //vai guardar o nome do arquivo de indices
+    int n;      //numero de insercoes a serem realizadas
+    regDados *registro = criaRegistro();  //ira guardar os dados fornecidos pelo usuario
+    regCabecI *cabecInd = criaCabecalhoIndice();  //estrutura que guardara o cabecalho do arquivo de indices
+    char buffer[201];
+    long long posUltimoReg = -1;  //ira guardar o byte offset do ultimo registro do arquivo
 
+    scanf("%50s %50s", dataFileName, indexFileName);
+    scanf("%d", &n);
+
+    FILE *dataFile = fopen(dataFileName, "rb+");  //abre o arquivo "dataFileName" para leitura e escrita binária
+    FILE *indexFile = fopen(indexFileName, "rb");  //abre o arquivo "dataFileName" para leitura binária
+
+    if (dataFile == NULL || indexFile == NULL) {   //erro na abertura do arquivo
+      printf("Falha no processamento do arquivo.");
+      return;
+    }
+
+    if (fgetc(dataFile) == '0') {   //se o byte "status" for '0', entao o arquivo esta inconsistente
+      printf("Falha no processamento do arquivo.");
+      return;
+    }
+    ungetc('0', dataFile);  //como o arquivo foi aberto para escrita, seu status deve ser '0'
+
+    if (fgetc(indexFile) == '0') {   //se o byte "status" for '0', entao o arquivo esta inconsistente
+      printf("Falha no processamento do arquivo.");
+      return;
+    }
+    ungetc('0', indexFile);  //como o arquivo foi aberto para escrita, seu status deve ser '0'
+
+    leCabecalhoIndice(indexFile, cabecInd);
+    SuperLista indiceRAM = carregaIndiceLista(indexFile);  //carrego o arquivo de indices para a RAM
+    fclose(indexFile);  //a partir de agora, so trabalho com o indice em memoria
+
+    for (int i = 0; i < n; i++) {
+
+        scanf("%d ", &(registro->idServidor));   //pego o valor de idServidor (esse campo nao pode ser nulo)
+
+        //pego o valor de salarioServidor
+        memset(buffer, 0, 201);   //limpo o buffer
+        char c = fgetc(stdin);
+        if (c == 'N') {     //o campo eh nulo
+            registro->salarioServidor = -1;
+            fseek(stdin, 4, SEEK_CUR);  //pulo os caracteres "ULO "
+        }
+        else {
+            ungetc(c, stdin);   //devolvo o char lido para a entrada padrao
+            scanf("%s ", buffer);
+            registro->salarioServidor = atof(buffer);
+        }
+
+        //pego o valor de telefoneServidor
+        memset(buffer, 0, 201);   //limpo o buffer
+        c = fgetc(stdin);
+        if (c == 'N') {     //o campo eh nulo
+            registro->telefoneServidor[0] = '\0';
+            fseek(stdin, 4, SEEK_CUR);  //pulo os caracteres "ULO "
+        }
+        else {
+            ungetc(c, stdin);   //devolvo o char lido para a entrada padrao
+            scanf("%*[\"]%[^\"]", buffer);  //le o campo, desconsiderando as aspas
+            fseek(stdin, 2, SEEK_CUR);  //pulo os caracteres "\" "
+            strcpy(registro->telefoneServidor, buffer);
+        }
+
+        //pego o valor de nomeServidor
+        memset(buffer, 0, 201);   //limpo o buffer
+        c = fgetc(stdin);
+        if (c == 'N') {     //o campo eh nulo
+            registro->nomeServidor = NULL;
+            fseek(stdin, 4, SEEK_CUR);  //pulo os caracteres "ULO "
+        }
+        else {
+            ungetc(c, stdin);   //devolvo o char lido para a entrada padrao
+            scanf("%*[\"]%[^\"]", buffer);  //le o campo, desconsiderando as aspas
+            fseek(stdin, 2, SEEK_CUR);  //pulo os caracteres "\" "
+            registro->nomeServidor = malloc(100*sizeof(char));
+            strcpy(registro->nomeServidor, buffer);
+            registro->tamCampo4 = strlen(registro->nomeServidor) + 2;     //conta tambem o '\0' e a tag do campo
+        }
+
+        //pego o valor de cargoServidor
+        memset(buffer, 0, 201);   //limpo o buffer
+        c = fgetc(stdin);
+        if (c == 'N') {     //o campo eh nulo
+            registro->cargoServidor = NULL;
+            fseek(stdin, 4, SEEK_CUR);  //pula os caracteres "ULO "
+        }
+        else {
+            ungetc(c, stdin);   //devolvo o char lido para a entrada padrao
+            scanf("%*[\"]%[^\"]", buffer);  //le o campo, desconsiderando as aspas
+            fseek(stdin, 2, SEEK_CUR);  //pulo os caracteres "\" "
+            registro->cargoServidor = malloc(100*sizeof(char));
+            strcpy(registro->cargoServidor, buffer);
+            registro->tamCampo5 = strlen(registro->cargoServidor) + 2;     //conta tambem o '\0' e a tag do campo
+        }
+
+        calculaTamanho(registro);
+
+        char *nomeServidor = malloc(120*sizeof(char));
+        strcpy(nomeServidor, registro->nomeServidor);
+        int tamReg = registro->tamanhoRegistro;
+
+        long long temp = achaPosicaoInsereSeek(dataFile, registro, posUltimoReg);  //adiciona o registro novo ao arquivo
+        if (temp != -1) posUltimoReg = temp;    //se o valor retornado pela funcao atualiza o BO do ultimo registro da lista, entao este valor deve ser guardado
+
+        if (nomeServidor != NULL) {   //se o campo "nomeServidor" nao eh nulo, podemos adicionar esse registro ao arquivo de indices
+            fseek(dataFile, -(tamReg+5), SEEK_CUR);  //volto ao inicio do registro inserido
+            atualizaAdcIndice(indiceRAM, nomeServidor, ftell(dataFile), cabecInd);   //atualiza a adicao no indice
+        }
+
+        free(nomeServidor);
+    }
+
+    indexFile = fopen(indexFileName, "wb+");  //abre o arquivo "dataFileName" para escrita binária
+
+    if (indexFile == NULL) {   //erro na abertura do arquivo
+      printf("Falha no processamento do arquivo.");
+      return;
+    }
+
+    reescreveArquivoIndice(indexFile, cabecInd, indiceRAM);
+    binarioNaTela1(indexFile);
+
+    //antes de fechar os arquivo, coloco seus status para '1'
+    fseek(dataFile, 0, SEEK_SET);  //coloco o ponteiro de escrita no primeiro byte do arquivo
+    fputc('1', dataFile);  //sobrescrevo o campo "status" do arquivo binario
+
+    freeRegistro(registro);
+    freeSuperLista(indiceRAM);
+    fclose(dataFile);
+    fclose(indexFile);
 }
 
 /*
