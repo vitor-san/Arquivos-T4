@@ -152,7 +152,6 @@ void leCSV() {
     assume que o usuario ira chama-la quando
     o ponteiro de leitura estiver exatamente no
     comeco do registro.
-
     Parametro:
         FILE *file - arquivo binario
 */
@@ -701,7 +700,6 @@ void adicionaReg() {
 /*
     Muda o campo de um registro de dados, de acordo
     com valores passados para a funcao.
-
     Parametros:
         regDados *registro - registro a ser modificado
         char *nomeCampo - nome do campo a ser modificado
@@ -1549,7 +1547,9 @@ void buscaIndice() {
     regCabec *cabecalho = criaCabecalho();  //estrutura que sera utilizada para guardar os valores do registro de cabecalho do arquivo binario de entrada
     regDados *registro = criaRegistro();  //estrutura que sera utilizada para guardar os registros lidos do arquivo binario de entrada
 
-    scanf("%50s %50s %[^\r\n]", dataFileName, indexFileName, nomeServidor);
+    scanf("%50s %50s nomeServidor %[^\r\n]", dataFileName, indexFileName, nomeServidor);
+
+    printf("%s\n", nomeServidor);
 
     FILE *dataFile = fopen(dataFileName, "rb");  //abro o arquivo binario de entrada para leitura
     FILE *indexFile = fopen(indexFileName, "rb");  //crio um novo arquivo binario para escrita (o de indices)
@@ -1612,7 +1612,6 @@ void buscaIndice() {
     que estao em RAM, removendo entre eles
     aquele que referencia um registro que acabou
     de ser logicamente removido.
-
     Parametros:
         SuperLista sl - indices a serem considerados
         char *nomeServidor - valor deste campo do
@@ -1874,7 +1873,6 @@ void removeRegInd() {
     que estao em RAM, adicionando entre eles
     aquele que referencia um registro que acabou
     de ser adicionado ao arquivo principal.
-
     Parametros:
         SuperLista sl - indices a serem considerados
         char *nomeServidor - valor deste campo do
@@ -2052,7 +2050,6 @@ void adicionaRegInd() {
 }
 
 /*
-
 */
 void comparaBuscas() {
 
