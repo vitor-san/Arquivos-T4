@@ -16,7 +16,7 @@ int compareIndice(void *reg1, void *reg2) {
     if (comp == 0) {
         long long byteOff1 = r->byteOffset;
         long long byteOff2 = s->byteOffset;
-        return (r > s) - (r < s);
+        return (byteOff1 > byteOff2) - (byteOff1 < byteOff2);
     }
     else return comp;
 }

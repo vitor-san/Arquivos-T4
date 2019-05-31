@@ -238,6 +238,7 @@ SuperLista carregaIndiceLista(FILE *file) {
     }
 
     free(reg);
+    return sl;
 }
 
 /*
