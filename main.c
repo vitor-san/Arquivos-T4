@@ -1538,18 +1538,18 @@ void criaArqIndices() {
     satisfacam uma busca determinada pelo usuario (sempre
     levando em conta o campo "nomeServidor") mostrando-os
     na tela assim que sao encontrados.
-    Tambem eh mostrado, ao final da execucao, quantas paginas
-    de disco foram acessadas ao todo.
+    Tambem eh mostrado, ao final da execucao, quantas
+    paginas de disco foram acessadas ao todo.
 */
 void buscaIndice() {
     char dataFileName[51];   //vai guardar o nome do arquivo de dados
     char indexFileName[51];   //vai guardar o nome do arquivo de indices
-    char nome[120];
-    char nomeServidor[20];
+    char nomeServidor[120];
+    regCabecI *cabecalhoI = criaCabecalhoIndice();
     regCabec *cabecalho = criaCabecalho();  //estrutura que sera utilizada para guardar os valores do registro de cabecalho do arquivo binario de entrada
     regDados *registro = criaRegistro();  //estrutura que sera utilizada para guardar os registros lidos do arquivo binario de entrada
 
-    scanf("%50s %50s %20s %120s", dataFileName, indexFileName, nomeServidor, nome);
+    scanf("%50s %50s %[^\r\n]", dataFileName, indexFileName, nomeServidor);
 
     FILE *dataFile = fopen(dataFileName, "rb");  //abro o arquivo binario de entrada para leitura
     FILE *indexFile = fopen(indexFileName, "rb");  //crio um novo arquivo binario para escrita (o de indices)
@@ -1560,10 +1560,11 @@ void buscaIndice() {
     }
 
     leCabecalho(dataFile, cabecalho);
+    leCabecalhoIndice(indexFile, cabecalhoI);
 
     if (cabecalho->status == '0') {   //se o campo "status" for '0', entao o arquivo esta inconsistente
-      printf("Falha no processamento do arquivo.");
-      return;
+        printf("Falha no processamento do arquivo.");
+        return;
     }
 
     fseek(dataFile, TAMPAG, SEEK_CUR);  //vou para a segunda pagina de disco (que contem os registros de dados)
@@ -1571,14 +1572,39 @@ void buscaIndice() {
     byte b = fgetc(dataFile);
 
     if (feof(dataFile)) {   //se o primeiro byte da primeira pagina de disco contendo os registros de dados for o final do arquivo, entao nao existem registros para serem mostrados
-      printf("Registro inexistente.");
-      return;
+        printf("Registro inexistente.");
+        return;
     }
 
     //carrega arquivo de indice em um vetor
     regDadosI* dadosI = carregaIndiceVetor(indexFile);
 
+    int comeco, tam;
+    long long* posDados = buscaRegistroIndice(dadosI, nomeServidor, 0, cabecalhoI->nroRegistros, &comeco, &tam);
+    regDados* r = criaRegistro();
 
+    for (int i = comeco; i >= 0; i--) {
+        fseek(dataFile, posDados[i], SEEK_SET);
+        leRegistro(dataFile, r);
+        mostraRegistroMeta(cabecalho, r);
+    }
+
+    for (int i = comeco+1; i < tam; i++) {
+        fseek(dataFile, posDados[i], SEEK_SET);
+        leRegistro(dataFile, r);
+        mostraRegistroMeta(cabecalho, r);
+    }
+
+    fseek(indexFile, 0, SEEK_END);
+
+    printf("Número de páginas de disco para carregar o arquivo de índice: %d\n", ((int)ftell(indexFile)/32000)+1);
+    printf("Número de páginas de disco para acessar o arquivo de dados: %d\n", tam);
+
+    free(cabecalhoI);
+    free(cabecalho);
+    freeRegistro(registro);
+    fclose(dataFile);
+    fclose(indexFile);
 }
 
 /*
@@ -1814,6 +1840,8 @@ void removeRegInd() {
                 }
             }
 
+            if (registro->nomeServidor != NULL) free(registro->nomeServidor);
+            if (registro->cargoServidor != NULL) free(registro->cargoServidor);
             b = fgetc(dataFile);
         }
 
@@ -1834,7 +1862,7 @@ void removeRegInd() {
     fseek(dataFile, 0, SEEK_SET);  //coloco o ponteiro de escrita no primeiro byte do arquivo
     fputc('1', dataFile);  //sobrescrevo o campo "status" do arquivo binario
 
-    freeRegistro(registro);
+    free(registro);
     free(cabecInd);
     freeSuperLista(indiceRAM);
     fclose(dataFile);

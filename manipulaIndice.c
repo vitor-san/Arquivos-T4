@@ -157,7 +157,7 @@ regDadosI *carregaIndiceVetor(FILE *file) {
 /*
 
 */
-long long* buscaRegistroIndice(regDadosI *v, char* chave, int ini, int fim, int* comeco) {
+long long* buscaRegistroIndice(regDadosI *v, char* chave, int ini, int fim, int* comeco,int* tam) {
 
     // 0 - caso base (busca sem sucesso)
     if (ini > fim) return NULL;
@@ -171,6 +171,7 @@ long long* buscaRegistroIndice(regDadosI *v, char* chave, int ini, int fim, int*
 
         int pos = 0;
         retorno[pos] = v[centro].byteOffset;
+        pos++;
 
         int prox = centro + 1;
         int ant = centro - 1;
@@ -178,7 +179,7 @@ long long* buscaRegistroIndice(regDadosI *v, char* chave, int ini, int fim, int*
         while(!strcmp(v[ant].chaveBusca,chave)) {
             pos++;
             retorno = realloc(retorno,sizeof(long long)*(pos));
-            retorno[pos] = v[ant].byteOffset;
+            retorno[pos-1] = v[ant].byteOffset;
             ant--;
         }
 
@@ -187,9 +188,11 @@ long long* buscaRegistroIndice(regDadosI *v, char* chave, int ini, int fim, int*
         while(!strcmp(v[prox].chaveBusca,chave)) {
             pos++;
             retorno = realloc(retorno,sizeof(long long)*(pos));
-            retorno[pos] = v[prox].byteOffset;
+            retorno[pos-1] = v[prox].byteOffset;
             prox++;
         }
+
+        *tam = pos;
 
         return retorno;
     }
@@ -197,11 +200,11 @@ long long* buscaRegistroIndice(regDadosI *v, char* chave, int ini, int fim, int*
     // 2 - chamada recursiva para metade do espaco de busca
     if (strcmp(chave,v[centro].chaveBusca) < 0)
         // se chave eh menor, fim passa ser o centro-1
-        return buscaRegistroIndice(v, chave, ini, centro-1, comeco);
+        return buscaRegistroIndice(v, chave, ini, centro-1, comeco,tam);
 
     if (strcmp(chave,v[centro].chaveBusca) > 0)
         // se a chave eh maior, inicio passa ser centro+1
-        return buscaRegistroIndice(v, chave, centro+1, fim, comeco);
+        return buscaRegistroIndice(v, chave, centro+1, fim, comeco,tam);
 }
 
 /*
