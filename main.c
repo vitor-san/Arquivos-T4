@@ -1835,6 +1835,7 @@ void removeRegInd() {
     fputc('1', dataFile);  //sobrescrevo o campo "status" do arquivo binario
 
     freeRegistro(registro);
+    free(cabecInd);
     freeSuperLista(indiceRAM);
     fclose(dataFile);
     fclose(indexFile);
@@ -1979,8 +1980,15 @@ void adicionaRegInd() {
 
         calculaTamanho(registro);
 
-        char *nomeServidor = malloc(120*sizeof(char));
-        strcpy(nomeServidor, registro->nomeServidor);
+        char *nomeServidor;
+        if (registro->nomeServidor != NULL) {
+            nomeServidor = malloc(120*sizeof(char));
+            strcpy(nomeServidor, registro->nomeServidor);
+        }
+        else {
+            nomeServidor = NULL;
+        }
+
         int tamReg = registro->tamanhoRegistro;
 
         long long temp = achaPosicaoInsereSeek(dataFile, registro, posUltimoReg);  //adiciona o registro novo ao arquivo
@@ -1991,7 +1999,7 @@ void adicionaRegInd() {
             atualizaAdcIndice(indiceRAM, nomeServidor, ftell(dataFile), cabecInd);   //atualiza a adicao no indice
         }
 
-        free(nomeServidor);
+        if (nomeServidor != NULL) free(nomeServidor);
     }
 
     indexFile = fopen(indexFileName, "wb+");  //abre o arquivo "dataFileName" para escrita binária
@@ -2008,7 +2016,8 @@ void adicionaRegInd() {
     fseek(dataFile, 0, SEEK_SET);  //coloco o ponteiro de escrita no primeiro byte do arquivo
     fputc('1', dataFile);  //sobrescrevo o campo "status" do arquivo binario
 
-    freeRegistro(registro);
+    free(registro);
+    free(cabecInd);
     freeSuperLista(indiceRAM);
     fclose(dataFile);
     fclose(indexFile);
