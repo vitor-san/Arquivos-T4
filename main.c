@@ -1549,8 +1549,6 @@ void buscaIndice() {
 
     scanf("%50s %50s nomeServidor %[^\r\n]", dataFileName, indexFileName, nomeServidor);
 
-    printf("%s\n", nomeServidor);
-
     FILE *dataFile = fopen(dataFileName, "rb");  //abro o arquivo binario de entrada para leitura
     FILE *indexFile = fopen(indexFileName, "rb");  //crio um novo arquivo binario para escrita (o de indices)
 
@@ -1563,6 +1561,11 @@ void buscaIndice() {
     leCabecalhoIndice(indexFile, cabecalhoI);
 
     if (cabecalho->status == '0') {   //se o campo "status" for '0', entao o arquivo esta inconsistente
+        printf("Falha no processamento do arquivo.");
+        return;
+    }
+
+    if (cabecalhoI->status == '0') {   //se o campo "status" for '0', entao o arquivo esta inconsistente
         printf("Falha no processamento do arquivo.");
         return;
     }
