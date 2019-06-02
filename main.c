@@ -1593,6 +1593,10 @@ void buscaIndice() {
     long long* posDados = buscaRegistroIndice(dadosI, nomeServidor, 0, cabecalhoI->nroRegistros, &comeco, &tam);
     regDados* r = criaRegistro();
 
+    if (posDados == NULL) {
+        printf("Registro inexistente.");
+        return;
+    }
 
     for (int i = comeco; i >= 0; i--) {
         fseek(dataFile, posDados[i], SEEK_SET);
@@ -1614,6 +1618,8 @@ void buscaIndice() {
     free(cabecalhoI);
     free(cabecalho);
     freeRegistro(registro);
+    if (posDados != NULL) free(posDados);
+    freeRegistro(r);
     fclose(dataFile);
     fclose(indexFile);
 }
@@ -2237,6 +2243,11 @@ void comparaBuscas() {
 
   printf("\n*** Realizando a busca com o auxílio de um índice \n");
 
+  if (posDados == NULL) {
+        printf("Registro inexistente.");
+        return;
+  }
+
   for (int i = comeco; i >= 0; i--) {
       fseek(dataFile, posDados[i], SEEK_SET);
       leRegistro(dataFile, r);
@@ -2256,7 +2267,9 @@ void comparaBuscas() {
 
   free(cabecalhoI);
   free(cabecalho);
+  free(posDados);
   freeRegistro(registro);
+  freeRegistro(r);
   fclose(dataFile);
   fclose(indexFile);
 
