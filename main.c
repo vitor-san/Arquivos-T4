@@ -2118,8 +2118,6 @@ void comparaBuscas() {
   long long* posDados = buscaRegistroIndice(dadosI, nomeServidor, 0, cabecalhoI->nroRegistros, &comeco, &tam);
   regDados* r = criaRegistro();
 
-  printf("*** Realizando a busca sem o auxílio de índice\n");
-
   fseek(dataFile,0,SEEK_SET);
 
   char fileName[51];   //vai guardar o nome do arquivo a ser aberto
@@ -2203,6 +2201,7 @@ void comparaBuscas() {
               }
               else {  //o valor a ser buscado nao eh nulo
                   if (registro->nomeServidor != NULL && !strcmp(registro->nomeServidor, valorCampo)) {    //se o valor lido eh igual ao do dado como criterio de busca...
+                      if (achou != 1) printf("*** Realizando a busca sem o auxílio de índice\n");
                       mostraRegistroMeta(cabecalho, registro);
                       achou = 1;
                   }
@@ -2239,31 +2238,29 @@ void comparaBuscas() {
   }
   else {
       printf("Número de páginas de disco acessadas: %d", acessosPagina);
+      printf("\n*** Realizando a busca com o auxílio de um índice \n");
+
+
+      for (int i = comeco; i >= 0; i--) {
+          fseek(dataFile, posDados[i], SEEK_SET);
+          leRegistro(dataFile, r);
+          mostraRegistroMeta(cabecalho, r);
+      }
+
+      for (int i = comeco+1; i < tam; i++) {
+          fseek(dataFile, posDados[i], SEEK_SET);
+          leRegistro(dataFile, r);
+          mostraRegistroMeta(cabecalho, r);
+      }
+
+      fseek(indexFile, 0, SEEK_END);
+
+      printf("Número de páginas de disco para carregar o arquivo de índice: %d\n", ((int)ftell(indexFile)/32000)+1);
+      printf("Número de páginas de disco para acessar o arquivo de dados: %d\n", tam);
+
+      printf("\nA diferença no número de páginas de disco acessadas: %d\n", acessosPagina - tam);
+
   }
-
-  printf("\n*** Realizando a busca com o auxílio de um índice \n");
-
-  if (posDados == NULL) {
-        printf("Registro inexistente.");
-        return;
-  }
-
-  for (int i = comeco; i >= 0; i--) {
-      fseek(dataFile, posDados[i], SEEK_SET);
-      leRegistro(dataFile, r);
-      mostraRegistroMeta(cabecalho, r);
-  }
-
-  for (int i = comeco+1; i < tam; i++) {
-      fseek(dataFile, posDados[i], SEEK_SET);
-      leRegistro(dataFile, r);
-      mostraRegistroMeta(cabecalho, r);
-  }
-
-  fseek(indexFile, 0, SEEK_END);
-
-  printf("Número de páginas de disco para carregar o arquivo de índice: %d\n", ((int)ftell(indexFile)/32000)+1);
-  printf("Número de páginas de disco para acessar o arquivo de dados: %d\n", tam);
 
   free(cabecalhoI);
   free(cabecalho);
