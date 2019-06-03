@@ -2237,11 +2237,11 @@ void comparaBuscas() {
 
     if (!achou) {
         printf("Registro inexistente.\n");
-        printf("Número de páginas de disco acessadas: %d\n", acessosPagina);
+        printf("Número de páginas de disco acessadas: %d", acessosPagina);
     }
 
     else {
-        printf("Número de páginas de disco acessadas: %d\n", acessosPagina);
+        printf("Número de páginas de disco acessadas: %d", acessosPagina);
 
     }
 
@@ -2284,8 +2284,8 @@ void comparaBuscas() {
     free(cabecalhoI);
     free(cabecalho);
     free(posDados);
-    freeRegistro(registro);
-    freeRegistro(r);
+    free(registro);
+    free(r);
     fclose(dataFile);
     fclose(indexFile);
 
