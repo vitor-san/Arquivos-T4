@@ -155,7 +155,23 @@ regDadosI *carregaIndiceVetor(FILE *file) {
 }
 
 /*
+    Essa funcao busca por um registro no arquivo de
+    indices pelo nomeServidor, e retorna o byteOffset
+    do arquivo de dados dos mesmos. Caso exista mais
+    do que um registro com o nome buscado, sera
+    retornado um vetor de byte offsets, ordenados em
+    funcao do valor do byte offset.
 
+    Parametros:
+        regDadosI *v - vetor com o arquivo de indice em RAM
+        char* chave - chave de busca
+        int ini - comeco do vetor
+        int fim - fim do vetor
+        int* comeco - comeco do vetor de retorno
+        int* tam - tamanho do vetor de retorno
+    Retorno:
+        long long* - vetor com os byteOffsets dos registro
+    do arquivo de dados
 */
 long long* buscaRegistroIndice(regDadosI *v, char* chave, int ini, int fim, int* comeco,int* tam) {
 
@@ -173,7 +189,9 @@ long long* buscaRegistroIndice(regDadosI *v, char* chave, int ini, int fim, int*
         retorno[pos] = v[centro].byteOffset;
         pos++;
 
+        //busca os registros depois do encontrado
         int prox = centro + 1;
+        //busca os registros antes do encontrado
         int ant = centro - 1;
 
         while(!strcmp(v[ant].chaveBusca,chave)) {
@@ -183,6 +201,8 @@ long long* buscaRegistroIndice(regDadosI *v, char* chave, int ini, int fim, int*
             ant--;
         }
 
+        //marca a posicao do ultimo registro encontrado]
+        //antes do primeiro, ou seja menores que ele
         *comeco = pos-1;
 
         while(!strcmp(v[prox].chaveBusca,chave)) {
@@ -192,6 +212,7 @@ long long* buscaRegistroIndice(regDadosI *v, char* chave, int ini, int fim, int*
             prox++;
         }
 
+        //guarda o tamanho do vetor
         *tam = pos;
 
         return retorno;

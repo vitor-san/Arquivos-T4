@@ -1544,7 +1544,6 @@ void criaArqIndices() {
 */
 void buscaIndice() {
 
-
     char dataFileName[51];   //vai guardar o nome do arquivo de dados
     char indexFileName[51];   //vai guardar o nome do arquivo de indices
     char nomeServidor[120];
@@ -2073,13 +2072,12 @@ void adicionaRegInd() {
 }
 
 /*
-    Essa funcao compara a busca
-    de um registro primeiramente
-    sem o arquivo de indices e depois
-    usando-o, no final compara-se o
-    numero de paginas de disco acessadas
-    no arquivo de dados para cada um dos
-    dois metodos
+    Essa funcao compara a busca de um
+    registro primeiramente sem o arquivo
+    de indices e depois usando-o, sendo
+    que no final compara-se o numero de
+    paginas de disco acessadas no arquivo
+    de dados para cada um dos metodos.
 */
 void comparaBuscas() {
 
@@ -2096,44 +2094,45 @@ void comparaBuscas() {
     FILE *indexFile = fopen(indexFileName, "rb");  //crio um novo arquivo binario para escrita (o de indices)
 
     if (dataFile == NULL || indexFile == NULL) {   //erro na abertura dos arquivos
-      printf("Falha no carregamento do arquivo.");
-      return;
+        printf("Falha no carregamento do arquivo.");
+        return;
     }
 
     leCabecalho(dataFile, cabecalho);
     leCabecalhoIndice(indexFile, cabecalhoI);
 
     if (cabecalho->status == '0' || cabecalhoI->status == '0') {   //se o campo "status" for '0', entao o arquivo esta inconsistente
-      printf("Falha no processamento do arquivo.");
-      return;
+        printf("Falha no processamento do arquivo.");
+        return;
     }
 
     fseek(dataFile, TAMPAG, SEEK_CUR);  //vou para a segunda pagina de disco (que contem os registros de dados)
+    fseek(indexFile, TAMPAG, SEEK_CUR);  //vou para a segunda pagina de disco (que contem os registros de dados)
 
     byte b = fgetc(dataFile);
 
     if (feof(dataFile)) {   //se o primeiro byte da primeira pagina de disco contendo os registros de dados for o final do arquivo, entao nao existem registros para serem mostrados
-      printf("Registro inexistente.");
-      return;
+        printf("Registro inexistente.");
+        return;
     }
 
     b = fgetc(indexFile);
 
     if (feof(indexFile)) {   //se o primeiro byte da primeira pagina de disco contendo os registros de dados for o final do arquivo, entao nao existem registros para serem mostrados
-      printf("Registro inexistente.");
-      return;
+        printf("Registro inexistente.");
+        return;
     }
 
     //carrega arquivo de indice em um vetor
     regDadosI* dadosI = carregaIndiceVetor(indexFile);
 
     //a primeira variavel marca o inicio do vetor de byteOffsets dos registros do arquivo de dados
-    //a segunda
+    //a segunda guarda o tamanho do vetor de byteOffsets
     int comeco, tam;
     long long* posDados = buscaRegistroIndice(dadosI, nomeServidor, 0, cabecalhoI->nroRegistros, &comeco, &tam);
     regDados* r = criaRegistro();
 
-    fseek(dataFile,0,SEEK_SET);
+    fseek(dataFile, 0, SEEK_SET);
 
     char fileName[51];   //vai guardar o nome do arquivo a ser aberto
     char nomeCampo[51];    //campo a ser considerado na busca
@@ -2141,16 +2140,16 @@ void comparaBuscas() {
     int acessosPagina = 0; //vai contar a quantidade de acessos a paginas de disco no decorrer da execucao
 
     //reutiliza a entrada para fazer a segunda busca
-    strcpy(fileName,dataFileName);
-    strcpy(nomeCampo,"nomeServidor");
-    strcpy(valorCampo,nomeServidor);
+    strcpy(fileName, dataFileName);
+    strcpy(nomeCampo, "nomeServidor");
+    strcpy(valorCampo, nomeServidor);
 
     leCabecalho(dataFile, cabecalho);
     acessosPagina++;
 
     if (cabecalho->status == '0') {   //se o campo "status" for '0', entao o arquivo esta inconsistente
-    printf("Falha no processamento do arquivo.");
-    return;
+        printf("Falha no processamento do arquivo.");
+        return;
     }
 
     fseek(dataFile, TAMPAG, SEEK_CUR);  //vou para a segunda pagina de disco (que contem os registros de dados)
@@ -2158,12 +2157,11 @@ void comparaBuscas() {
     b = fgetc(dataFile);
 
     if (feof(dataFile)) {   //se o primeiro byte da primeira pagina de disco contendo os registros de dados for o final do arquivo, entao nao existem registros para serem mostrados
-    printf("Registro inexistente.");
-    return;
+        printf("Registro inexistente.");
+        return;
     }
 
     int achou = 0;    //indicara se pelo menos um registro foi achado
-
 
     printf("*** Realizando a busca sem o auxílio de índice\n");
 
@@ -2253,13 +2251,8 @@ void comparaBuscas() {
 
     if (!achou) {
         printf("Registro inexistente.\n");
-        printf("Número de páginas de disco acessadas: %d", acessosPagina);
     }
-
-    else {
-        printf("Número de páginas de disco acessadas: %d", acessosPagina);
-
-    }
+    printf("Número de páginas de disco acessadas: %d", acessosPagina);
 
     printf("\n*** Realizando a busca com o auxílio de um índice secundário fortemente ligado\n");
 
@@ -2308,8 +2301,6 @@ void comparaBuscas() {
     free(r);
     fclose(dataFile);
     fclose(indexFile);
-
-
 }
 
 /*
@@ -2361,9 +2352,6 @@ int main() {
             break;
         case 14:
             comparaBuscas();
-            break;
-        default:
-            printf("Opção inválida!\n");
     }
 
     return 0;
