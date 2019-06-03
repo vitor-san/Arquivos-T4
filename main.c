@@ -1570,11 +1570,6 @@ void buscaIndice() {
         return;
     }
 
-    if (cabecalhoI->status == '0') {   //se o campo "status" for '0', entao o arquivo esta inconsistente
-        printf("Falha no processamento do arquivo.");
-        return;
-    }
-
     fseek(dataFile, TAMPAG, SEEK_CUR);  //vou para a segunda pagina de disco (que contem os registros de dados)
 
     byte b = fgetc(dataFile);
@@ -2153,6 +2148,9 @@ void comparaBuscas() {
 
   int achou = 0;    //indicara se pelo menos um registro foi achado
 
+
+  printf("*** Realizando a busca sem o auxílio de índice\n");
+
   while (!feof(dataFile)) {
 
       ungetc(b, dataFile); //"devolvo" o byte lido para o arquivo binario
@@ -2206,7 +2204,6 @@ void comparaBuscas() {
               }
               else {  //o valor a ser buscado nao eh nulo
                   if (registro->nomeServidor != NULL && !strcmp(registro->nomeServidor, valorCampo)) {    //se o valor lido eh igual ao do dado como criterio de busca...
-                      if (achou != 1) printf("*** Realizando a busca sem o auxílio de índice\n");
                       mostraRegistroMeta(cabecalho, registro);
                       achou = 1;
                   }
@@ -2238,42 +2235,59 @@ void comparaBuscas() {
       b = fgetc(dataFile);
   }
 
-  if (!achou) {
-      printf("Registro inexistente.");
-  }
-  else {
-      printf("Número de páginas de disco acessadas: %d", acessosPagina);
-      printf("\n*** Realizando a busca com o auxílio de um índice \n");
+    if (!achou) {
+        printf("Registro inexistente.\n");
+        printf("Número de páginas de disco acessadas: %d\n", acessosPagina);
+    }
 
+    else {
+        printf("Número de páginas de disco acessadas: %d\n", acessosPagina);
 
-      for (int i = comeco; i >= 0; i--) {
-          fseek(dataFile, posDados[i], SEEK_SET);
-          leRegistro(dataFile, r);
-          mostraRegistroMeta(cabecalho, r);
-      }
+    }
 
-      for (int i = comeco+1; i < tam; i++) {
-          fseek(dataFile, posDados[i], SEEK_SET);
-          leRegistro(dataFile, r);
-          mostraRegistroMeta(cabecalho, r);
-      }
+    printf("\n*** Realizando a busca com o auxílio de um índice \n");
 
-      fseek(indexFile, 0, SEEK_END);
+    int acessosI = 1;
+    long long antByteOffset = -1;
 
-      printf("Número de páginas de disco para carregar o arquivo de índice: %d\n", ((int)ftell(indexFile)/32000)+1);
-      printf("Número de páginas de disco para acessar o arquivo de dados: %d\n", tam);
+    if (posDados == NULL) {
+        printf("Registro inexistente.\n");
+    }
 
-      printf("\nA diferença no número de páginas de disco acessadas: %d\n", acessosPagina - tam);
+    else {
 
-  }
+        for (int i = comeco; i >= 0; i--) {
+            fseek(dataFile, posDados[i], SEEK_SET);
+            leRegistro(dataFile, r);
+            mostraRegistroMeta(cabecalho, r);
+            if ((posDados[i]/32000) != (antByteOffset/32000)) acessosI++;
+            antByteOffset = posDados[i];
+        }
 
-  free(cabecalhoI);
-  free(cabecalho);
-  free(posDados);
-  freeRegistro(registro);
-  freeRegistro(r);
-  fclose(dataFile);
-  fclose(indexFile);
+        for (int i = comeco+1; i < tam; i++) {
+            fseek(dataFile, posDados[i], SEEK_SET);
+            leRegistro(dataFile, r);
+            mostraRegistroMeta(cabecalho, r);
+            if ((posDados[i]/32000) != (antByteOffset/32000)) acessosI++;
+            antByteOffset = posDados[i];
+        }
+
+    }
+
+    fseek(indexFile, 0, SEEK_END);
+
+    printf("Número de páginas de disco para carregar o arquivo de índice: %d\n", ((int)ftell(indexFile)/32000)+1);
+    printf("Número de páginas de disco para acessar o arquivo de dados: %d\n", acessosI);
+
+    printf("\nA diferença no número de páginas de disco acessadas: %d", acessosPagina - acessosI);
+
+    free(cabecalhoI);
+    free(cabecalho);
+    free(posDados);
+    freeRegistro(registro);
+    freeRegistro(r);
+    fclose(dataFile);
+    fclose(indexFile);
 
 
 }
