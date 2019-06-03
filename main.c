@@ -2245,7 +2245,7 @@ void comparaBuscas() {
 
     }
 
-    printf("\n*** Realizando a busca com o auxílio de um índice \n");
+    printf("\n*** Realizando a busca com o auxílio de um índice secundário fortemente ligado\n");
 
     int acessosI = 1;
     long long antByteOffset = -1;
